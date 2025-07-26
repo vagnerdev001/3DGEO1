@@ -232,10 +232,10 @@ const CesiumViewer = forwardRef(({
         osmBuildings.style = new window.Cesium.Cesium3DTileStyle({
           color: {
             conditions: [
-              ['${height} >= 100', 'color("#FFC107")'],
-              ['${height} >= 50', 'color("#FF9800")'],
-              ['${height} >= 25', 'color("#FF5722")'],
-              ['${height} >= 10', 'color("#F44336")'],
+              ['Number(${height}) >= 100', 'color("#FFC107")'],
+              ['Number(${height}) >= 50', 'color("#FF9800")'],
+              ['Number(${height}) >= 25', 'color("#FF5722")'],
+              ['Number(${height}) >= 10', 'color("#F44336")'],
               ['true', 'color("#BDBDBD")']
             ]
           }
