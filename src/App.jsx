@@ -836,7 +836,8 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <>
+      <div className="app">
       <CesiumViewer
         ref={viewerRef}
         isDrawing={isDrawing}
@@ -910,6 +911,7 @@ function App() {
         show={showAdminPanel}
         onToggle={setShowAdminPanel}
       />
+      </div>
       
       {/* Panel Toggle Menu */}
       <div style={{
@@ -960,7 +962,7 @@ function App() {
           </button>
         )}
       </div>
-    </div>
+    </>
   );
 }
 
