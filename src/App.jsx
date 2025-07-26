@@ -942,7 +942,43 @@ function App() {
               fontSize: '11px',
               cursor: 'pointer'
             }}
-          >
+          {!showAIControls && (
+            <button 
+              className="window-menu-btn ai-controls"
+              onClick={() => setShowAIControls(true)}
+            >
+              🏗️ יוצר בניינים
+            </button>
+          )}
+          {!showObjectPlacer && (
+            <button 
+              className="window-menu-btn object-placer"
+              onClick={() => setShowObjectPlacer(true)}
+            >
+              🎯 מציב אובייקטים
+            </button>
+          )}
+          {!showLayerSwitcher && (
+            <button 
+              className="window-menu-btn layer-switcher"
+              onClick={() => setShowLayerSwitcher(true)}
+            >
+              🗺️ שכבות מפה
+            </button>
+          )}
+          {!showAdminPanel && (
+            <button 
+              className="window-menu-btn admin-panel"
+              onClick={() => setShowAdminPanel(true)}
+            >
+              🔧 ניהול מערכת
+            </button>
+          )}
+        </div>
+
+        {/* תפריט חלונות ישן - להסרה */}
+        {/* <div className="window-menu">
+          <button className="window-menu-btn ai-controls">
             🏗️ יוצר בניינים
           </button>
         )}
@@ -1002,9 +1038,12 @@ function App() {
           >
             🔧 ניהול מערכת
           </button>
-        )}
+        </div> */}
+      )
+      }
       </div>
     </div>
+  )
   );
 }
 
