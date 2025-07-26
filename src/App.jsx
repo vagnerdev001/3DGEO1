@@ -201,8 +201,8 @@ function App() {
   const handleBuildingClick = (buildingEntity) => {
     console.log('🏢 Building clicked:', buildingEntity.id);
     
-    // Set popup position under the AI controls panel
-    setPopupPosition({ x: window.innerWidth - 350, y: 200 });
+    // Set popup position directly below the AI controls panel
+    setPopupPosition({ x: window.innerWidth - 320, y: 280 });
     
     // Find the building data from savedBuildings
     const buildingData = savedBuildings.find(b => b.id === buildingEntity.id);
