@@ -3,6 +3,7 @@ import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 const CesiumViewer = forwardRef(({ 
   isDrawing, 
   activeShapePoints, 
+  currentLayer,
   onDrawingStateChange, 
   onBuildingClick 
 }, ref) => {

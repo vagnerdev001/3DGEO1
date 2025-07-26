@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import CesiumViewer from './components/CesiumViewer';
 import AIControls from './components/AIControls';
 import DataFormModal from './components/DataFormModal';
+import LayerSwitcher from './components/LayerSwitcher';
 import { buildingService } from './services/supabase';
 import './App.css';
 
@@ -13,6 +14,7 @@ function App() {
   const [statusMessage, setStatusMessage] = useState("Click 'Start Drawing' to create a building footprint.");
   const [showDataForm, setShowDataForm] = useState(false);
   const [aiCommand, setAiCommand] = useState('');
+  const [currentLayer, setCurrentLayer] = useState('osm');
   const viewerRef = useRef(null);
 
   const handleDrawingStateChange = (drawing, points, building, buildingId, message) => {
@@ -144,6 +146,7 @@ function App() {
         ref={viewerRef}
         isDrawing={isDrawing}
         activeShapePoints={activeShapePoints}
+        currentLayer={currentLayer}
         onDrawingStateChange={handleDrawingStateChange}
         onBuildingClick={handleBuildingClick}
       />
@@ -155,6 +158,10 @@ function App() {
         onStartDrawing={handleStartDrawing}
         onCreateBuilding={handleCreateBuilding}
         canCreate={activeShapePoints.length >= 3 && !isDrawing}
+      />
+      <LayerSwitcher
+        currentLayer={currentLayer}
+        onLayerChange={setCurrentLayer}
       />
       {showDataForm && (
         <DataFormModal

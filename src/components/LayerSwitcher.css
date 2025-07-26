@@ -1,0 +1,37 @@
+.layer-switcher {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(38, 38, 38, 0.9);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  color: #fff;
+  min-width: 150px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+.layer-switcher h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #555;
+  padding-bottom: 8px;
+}
+
+.layer-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.layer-option input[type="radio"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.layer-option:hover {
+  color: #4CAF50;
+}
