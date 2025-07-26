@@ -33,8 +33,7 @@ export const buildingService = {
         color_sofi: data.color_sofi || '',
         full_addresse: data.full_addresse || '',
         mi_address: data.mi_address || '',
-        codeapp: data.codeapp || '',
-        transparency: data.transparency || 0.9
+        codeapp: data.codeapp || ''
       };
       
       const buildingData = {

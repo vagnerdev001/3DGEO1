@@ -53,6 +53,9 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
           if (key === 'floor_colors') {
             // Ensure floor_colors is always an array
             sanitizedData[key] = Array.isArray(result.data[key]) ? result.data[key] : [];
+          } else if (key === 'transparency') {
+            // Keep transparency as UI-only field with default value
+            sanitizedData[key] = 0.9;
           } else if (key === 'height') {
             // Ensure height is always a number or empty string
             sanitizedData[key] = result.data[key] != null ? result.data[key] : '';
