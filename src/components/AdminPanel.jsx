@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import ModelUploader from './ModelUploader';
 import './AdminPanel.css';
 
-const AdminPanel = ({ onToggle }) => {
+const AdminPanel = ({ onToggle, onWidgetVisibilityChange, widgetVisibility }) => {
   const [showUploader, setShowUploader] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+
+  const handleWidgetToggle = (widgetName, isVisible) => {
+    onWidgetVisibilityChange(widgetName, isVisible);
+  };
 
   return (
     <>
@@ -36,6 +40,37 @@ const AdminPanel = ({ onToggle }) => {
           >
             📦 העלה דגם 3D
           </button>
+          
+          <div className="widget-controls">
+            <h4>בקרת חלונות</h4>
+            
+            <label className="widget-checkbox">
+              <input
+                type="checkbox"
+                checked={widgetVisibility.objectPlacer}
+                onChange={(e) => handleWidgetToggle('objectPlacer', e.target.checked)}
+              />
+              <span>🎯 מציב אובייקטים</span>
+            </label>
+            
+            <label className="widget-checkbox">
+              <input
+                type="checkbox"
+                checked={widgetVisibility.layerSwitcher}
+                onChange={(e) => handleWidgetToggle('layerSwitcher', e.target.checked)}
+              />
+              <span>🗺️ שכבות מפה</span>
+            </label>
+            
+            <label className="widget-checkbox">
+              <input
+                type="checkbox"
+                checked={widgetVisibility.plansDashboard}
+                onChange={(e) => handleWidgetToggle('plansDashboard', e.target.checked)}
+              />
+              <span>🏗️ לוח תוכניות</span>
+            </label>
+          </div>
         </div>
       </div>
 

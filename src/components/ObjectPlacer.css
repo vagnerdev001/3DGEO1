@@ -25,6 +25,12 @@
   display: none;
 }
 
+.panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: white !important;
+}
+
 .form-group {
   margin-bottom: 15px;
 }

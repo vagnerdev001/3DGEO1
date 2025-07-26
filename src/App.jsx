@@ -34,9 +34,36 @@ function App() {
   const [showLayerSwitcher, setShowLayerSwitcher] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(true);
 
+  // Widget visibility state controlled by admin panel
+  const [widgetVisibility, setWidgetVisibility] = useState({
+    objectPlacer: false,
+    layerSwitcher: false,
+    plansDashboard: false
+  });
+
   // Plans Dashboard state
   const [showPlansDashboard, setShowPlansDashboard] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState('default-project');
+
+  const handleWidgetVisibilityChange = (widgetName, isVisible) => {
+    setWidgetVisibility(prev => ({
+      ...prev,
+      [widgetName]: isVisible
+    }));
+    
+    // Also control the actual widget visibility
+    switch (widgetName) {
+      case 'objectPlacer':
+        setShowObjectPlacer(isVisible);
+        break;
+      case 'layerSwitcher':
+        setShowLayerSwitcher(isVisible);
+        break;
+      case 'plansDashboard':
+        setShowPlansDashboard(isVisible);
+        break;
+    }
+  };
 
   // Load saved buildings when component mounts
   useEffect(() => {
@@ -985,21 +1012,25 @@ function App() {
         onCreateBuilding={handleCreateBuilding}
         canCreate={activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0}
       />
-      <LayerSwitcher
-        show={showLayerSwitcher}
-        onToggle={setShowLayerSwitcher}
-        currentLayer={currentLayer}
-        onLayerChange={setCurrentLayer}
-      />
-      <ObjectPlacer
-        show={showObjectPlacer}
-        onToggle={setShowObjectPlacer}
-        isPlacing={isPlacingObject}
-        onStartPlacing={handleStartObjectPlacing}
-        onCancelPlacing={handleCancelObjectPlacing}
-        onObjectPlace={handleObjectPlace}
-        selectedPosition={selectedObjectPosition}
-      />
+      {showLayerSwitcher && (
+        <LayerSwitcher
+          show={showLayerSwitcher}
+          onToggle={setShowLayerSwitcher}
+          currentLayer={currentLayer}
+          onLayerChange={setCurrentLayer}
+        />
+      )}
+      {showObjectPlacer && (
+        <ObjectPlacer
+          show={showObjectPlacer}
+          onToggle={setShowObjectPlacer}
+          isPlacing={isPlacingObject}
+          onStartPlacing={handleStartObjectPlacing}
+          onCancelPlacing={handleCancelObjectPlacing}
+          onObjectPlace={handleObjectPlace}
+          selectedPosition={selectedObjectPosition}
+        />
+      )}
       {showDataForm && (
         <DataFormModal
           buildingId={currentBuildingId}
@@ -1036,6 +1067,8 @@ function App() {
       <AdminPanel 
         show={showAdminPanel}
         onToggle={setShowAdminPanel}
+        onWidgetVisibilityChange={handleWidgetVisibilityChange}
+        widgetVisibility={widgetVisibility}
       />
       </div>
       
@@ -1063,7 +1096,7 @@ function App() {
             🏗️ יוצר בניינים
           </button>
         )}
-        {!showObjectPlacer && (
+        {!showObjectPlacer && widgetVisibility.objectPlacer && (
           <button 
             className="window-menu-btn object-placer"
             onClick={() => setShowObjectPlacer(true)}
@@ -1071,7 +1104,7 @@ function App() {
             🎯 מציב אובייקטים
           </button>
         )}
-        {!showLayerSwitcher && (
+        {!showLayerSwitcher && widgetVisibility.layerSwitcher && (
           <button 
             className="window-menu-btn layer-switcher"
             onClick={() => setShowLayerSwitcher(true)}
@@ -1087,7 +1120,7 @@ function App() {
             🔧 ניהול מערכת
           </button>
         )}
-        {!showPlansDashboard && (
+        {!showPlansDashboard && widgetVisibility.plansDashboard && (
           <button 
             className="window-menu-btn plans-dashboard"
             onClick={() => setShowPlansDashboard(true)}
