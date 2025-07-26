@@ -15,6 +15,7 @@ function App() {
   const [showDataForm, setShowDataForm] = useState(false);
   const [aiCommand, setAiCommand] = useState('');
   const [currentLayer, setCurrentLayer] = useState('osm');
+  const [showCustomBuildings, setShowCustomBuildings] = useState(true);
   const viewerRef = useRef(null);
   const [savedBuildings, setSavedBuildings] = useState([]);
 
@@ -87,7 +88,19 @@ function App() {
         const floorColors = building.floor_colors || [];
         const transparency = 0.9; // Default transparency since it's not stored in DB
         
-        createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
+        const buildingEntity = createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
+        
+        // Set visibility based on custom buildings layer toggle
+        if (buildingEntity) {
+          buildingEntity.show = showCustomBuildings;
+          // Also set visibility for all floor entities
+          const floorEntities = viewer.entities.values.filter(entity => 
+            entity.id && entity.id.startsWith(`${building.id}-floor-`)
+          );
+          floorEntities.forEach(entity => {
+            entity.show = showCustomBuildings;
+          });
+        }
       }
     });
   };

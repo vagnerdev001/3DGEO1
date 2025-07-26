@@ -39,3 +39,14 @@
 .layer-option:hover {
   color: #4CAF50;
 }
+
+.layer-separator {
+  height: 1px;
+  background-color: #555;
+  margin: 15px 0 10px 0;
+}
+
+.layer-option input[type="checkbox"] {
+  margin-left: 8px;
+  cursor: pointer;
+}
