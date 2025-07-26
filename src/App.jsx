@@ -28,22 +28,20 @@ function App() {
 
   const handleStartDrawing = () => {
     console.log('Start drawing button clicked, current state:', { isDrawing, pointsCount: activeShapePoints.length });
-    
+    console.log('Current state - isDrawing:', isDrawing, 'activeShapePoints:', activeShapePoints.length);
     if (viewerRef.current) {
       if (isDrawing) {
-        // Cancel drawing - clear everything
-        console.log('Canceling drawing...');
+        console.log('Canceling current drawing...');
         viewerRef.current.cancelDrawing();
-        setActiveShapePoints([]);
-        setAiCommand('');
       } else {
-        // Start drawing
-        console.log('Starting new drawing...');
+        console.log('Starting new drawing session...');
         viewerRef.current.startDrawing();
-        setActiveShapePoints([]);
-        setAiCommand('');
       }
     }
+    
+    // Reset local state
+    setActiveShapePoints([]);
+    setAiCommand('');
   };
 
   const handleBuildingClick = (buildingEntity) => {
@@ -53,20 +51,29 @@ function App() {
   };
 
   const handleCreateBuilding = async () => {
-    console.log('Create building clicked:', { 
-      pointsCount: activeShapePoints.length, 
-      aiCommand, 
-      canCreate: activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0 
+    console.log('=== CREATE BUILDING BUTTON CLICKED ===');
+    console.log('App state - activeShapePoints:', activeShapePoints.length);
+    console.log('App state - aiCommand:', aiCommand);
+    console.log('App state - isDrawing:', isDrawing);
+    
+    // Get the actual points from the viewer
+    const viewerPoints = viewerRef.current ? viewerRef.current.getActivePoints() : [];
+    console.log('Viewer points:', viewerPoints.length);
+    
+    // Use viewer points if available, otherwise use app state
+    const pointsToUse = viewerPoints.length > 0 ? viewerPoints : activeShapePoints;
+    console.log('Points to use for building:', pointsToUse.length);
     });
     
     console.log('Active shape points:', activeShapePoints);
     console.log('Points available for building creation:', activeShapePoints.length > 0);
 
-    if (activeShapePoints.length < 3) {
-      console.error('Not enough points for building creation');
+    if (pointsToUse.length < 3) {
+      console.error('Not enough points for building creation:', pointsToUse.length);
       alert('Please draw a valid building footprint first.');
       return;
     }
+    
     if (!aiCommand.trim()) {
       console.error('No AI command provided');
       alert('Please enter a command for the AI.');
@@ -95,7 +102,7 @@ function App() {
           id: buildingId,
           isBuilding: true,
           polygon: {
-            hierarchy: new window.Cesium.PolygonHierarchy(activeShapePoints),
+            hierarchy: new window.Cesium.PolygonHierarchy(pointsToUse),
             extrudedHeight: height,
             material: window.Cesium.Color.YELLOW.withAlpha(0.9),
             outline: true,
@@ -109,7 +116,7 @@ function App() {
         
         // Save building geometry and AI command to database
         console.log('Saving to database...');
-        const geometryPoints = activeShapePoints.map(point => ({
+        const geometryPoints = pointsToUse.map(point => ({
           longitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).longitude),
           latitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).latitude),
           height: window.Cesium.Cartographic.fromCartesian(point).height
@@ -135,8 +142,8 @@ function App() {
         }
         
         // Clear drawing state and show data form
-        if (viewerRef.current && viewerRef.current.clearDrawing) {
-          viewerRef.current.clearDrawing();
+        if (viewerRef.current && viewerRef.current.clearAll) {
+          viewerRef.current.clearAll();
         }
         setActiveShapePoints([]);
         setAiCommand('');
@@ -191,11 +198,13 @@ function App() {
 
   // Debug: Log state changes
   useEffect(() => {
-    console.log('App state:', { 
-      isDrawing, 
-      pointsCount: activeShapePoints.length, 
-      aiCommand: aiCommand.length,
-      canCreate: activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0
+    const canCreate = activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0;
+    console.log('=== APP STATE UPDATE ===');
+    console.log('- isDrawing:', isDrawing);
+    console.log('- activeShapePoints:', activeShapePoints.length);
+    console.log('- aiCommand:', aiCommand.length > 0 ? `"${aiCommand}"` : 'empty');
+    console.log('- canCreate:', canCreate);
+    console.log('========================');
     });
     console.log('Actual activeShapePoints:', activeShapePoints);
   }, [isDrawing, activeShapePoints, aiCommand]);

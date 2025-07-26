@@ -13,42 +13,141 @@ const CesiumViewer = forwardRef(({
   const drawingEntitiesRef = useRef([]);
   const activePointsRef = useRef([]);
   const isDrawingRef = useRef(false);
+  const activeShapeRef = useRef(null);
+  const floatingPointRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     viewer: viewerRef.current,
+    getActivePoints: () => activePointsRef.current,
     startDrawing: () => {
       console.log('Starting drawing...');
       isDrawingRef.current = true;
       activePointsRef.current = [];
       drawingEntitiesRef.current = [];
+      
+      // Clear any existing entities
+      if (viewerRef.current) {
+        viewerRef.current.entities.removeAll();
+      }
+      
       onDrawingStateChange(true, [], null, null, "Click to add points. Double-click to finish.");
+    },
+    finishDrawing: () => {
+      console.log('Finishing drawing with points:', activePointsRef.current.length);
+      if (activePointsRef.current.length >= 3) {
+        terminateShape();
+      }
     },
     cancelDrawing: () => {
       console.log('Canceling drawing...');
       isDrawingRef.current = false;
+      
       // Clear all drawing entities
       if (viewerRef.current) {
-        drawingEntitiesRef.current.forEach(entity => {
-          viewerRef.current.entities.remove(entity);
-        });
+        viewerRef.current.entities.removeAll();
       }
+      
       drawingEntitiesRef.current = [];
       activePointsRef.current = [];
+      activeShapeRef.current = null;
+      floatingPointRef.current = null;
+      
       onDrawingStateChange(false, [], null, null, "Drawing cancelled. Click 'Start Drawing' to begin.");
     },
-    clearDrawing: () => {
-      console.log('Clearing drawing...');
-      // Clear all drawing entities including preview polygon
+    clearAll: () => {
+      console.log('Clearing all...');
       if (viewerRef.current) {
-        drawingEntitiesRef.current.forEach(entity => {
-          viewerRef.current.entities.remove(entity);
-        });
+        viewerRef.current.entities.removeAll();
       }
       drawingEntitiesRef.current = [];
       activePointsRef.current = [];
+      activeShapeRef.current = null;
+      floatingPointRef.current = null;
       isDrawingRef.current = false;
     }
   }));
+
+  const terminateShape = () => {
+    console.log('=== TERMINATING SHAPE ===');
+    console.log('Points before termination:', activePointsRef.current.length);
+    
+    if (activePointsRef.current.length < 3) {
+      console.log('Not enough points to create shape');
+      return;
+    }
+
+    // Store the completed points BEFORE any cleanup
+    const completedPoints = [...activePointsRef.current];
+    console.log('Completed points stored:', completedPoints.length);
+    
+    // Stop drawing mode
+    isDrawingRef.current = false;
+    
+    // Remove floating point and active shape
+    if (floatingPointRef.current && viewerRef.current) {
+      viewerRef.current.entities.remove(floatingPointRef.current);
+      floatingPointRef.current = null;
+    }
+    
+    if (activeShapeRef.current && viewerRef.current) {
+      viewerRef.current.entities.remove(activeShapeRef.current);
+      activeShapeRef.current = null;
+    }
+    
+    // Create final polygon
+    if (viewerRef.current) {
+      const finalPolygon = viewerRef.current.entities.add({
+        id: 'completed-polygon',
+        polygon: {
+          hierarchy: new window.Cesium.PolygonHierarchy(completedPoints),
+          material: window.Cesium.Color.BLUE.withAlpha(0.3),
+          outline: true,
+          outlineColor: window.Cesium.Color.BLUE,
+          extrudedHeight: 0
+        }
+      });
+      console.log('Final polygon created:', finalPolygon);
+    }
+    
+    // Update parent with completed points
+    const message = `Footprint complete with ${completedPoints.length} points. Enter AI command and click "Create Building".`;
+    console.log('Calling onDrawingStateChange with:', completedPoints.length, 'points');
+    
+    onDrawingStateChange(
+      false, // not drawing anymore
+      completedPoints, // the completed points
+      null, 
+      null, 
+      message
+    );
+    
+    console.log('=== SHAPE TERMINATED ===');
+  };
+
+  const drawShape = (positionData) => {
+    if (!viewerRef.current) return;
+    
+    const viewer = viewerRef.current;
+    let shape;
+    
+    if (positionData.length < 2) {
+      return;
+    }
+    
+    // Create or update the active shape (polygon)
+    if (!activeShapeRef.current) {
+      activeShapeRef.current = viewer.entities.add({
+        polygon: {
+          hierarchy: new window.Cesium.CallbackProperty(() => {
+            return new window.Cesium.PolygonHierarchy(positionData);
+          }, false),
+          material: window.Cesium.Color.YELLOW.withAlpha(0.3),
+          outline: true,
+          outlineColor: window.Cesium.Color.YELLOW
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -71,38 +170,22 @@ const CesiumViewer = forwardRef(({
     });
 
     viewerRef.current = viewer;
-    console.log('Cesium viewer created:', viewer);
-
-    // Check if viewer was successfully created
-    if (!viewer || !viewer.scene) {
-      console.error('Failed to create Cesium viewer');
-      return;
-    }
+    console.log('Cesium viewer created');
 
     // Initialize scene
     const initializeScene = async () => {
       try {
-        // Check if viewer is still valid before proceeding
-        if (!viewer || viewer.isDestroyed()) {
-          return;
-        }
+        if (!viewer || viewer.isDestroyed()) return;
         
         const osmBuildings = await window.Cesium.createOsmBuildingsAsync();
-        
-        // Check again after async operation
-        if (!viewer || viewer.isDestroyed()) {
-          return;
-        }
+        if (!viewer || viewer.isDestroyed()) return;
         
         viewer.scene.primitives.add(osmBuildings);
         osmBuildings.style = new window.Cesium.Cesium3DTileStyle({ 
           color: "color('rgba(200, 200, 200, 0.8)')" 
         });
         
-        // Check once more before camera operation
-        if (!viewer || viewer.isDestroyed()) {
-          return;
-        }
+        if (!viewer || viewer.isDestroyed()) return;
         
         await viewer.camera.flyTo({
           destination: window.Cesium.Cartesian3.fromDegrees(34.7818, 32.0853, 2500),
@@ -124,16 +207,20 @@ const CesiumViewer = forwardRef(({
     const handler = new window.Cesium.ScreenSpaceEventHandler(viewer.canvas);
     handlerRef.current = handler;
 
+    // Left click handler
     handler.setInputAction((event) => {
-      console.log('Left click detected, isDrawing:', isDrawingRef.current);
+      console.log('Left click - isDrawing:', isDrawingRef.current);
       
       if (isDrawingRef.current) {
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
-          console.log('Adding point:', earthPosition);
-          activePointsRef.current.push(earthPosition);
+          console.log('Adding point at:', earthPosition);
           
-          // Add visual point
+          // Add point to array
+          activePointsRef.current.push(earthPosition);
+          console.log('Total points now:', activePointsRef.current.length);
+          
+          // Add visual point marker
           const pointEntity = viewer.entities.add({
             position: earthPosition,
             point: {
@@ -146,28 +233,12 @@ const CesiumViewer = forwardRef(({
             }
           });
           drawingEntitiesRef.current.push(pointEntity);
-          console.log('Point entity added:', pointEntity);
-
-          // Add line if we have more than one point
-          if (activePointsRef.current.length > 1) {
-            const lineEntity = viewer.entities.add({
-              polyline: {
-                positions: [
-                  activePointsRef.current[activePointsRef.current.length - 2], 
-                  activePointsRef.current[activePointsRef.current.length - 1]
-                ],
-                width: 4,
-                material: window.Cesium.Color.CYAN,
-                clampToGround: true
-              }
-            });
-            drawingEntitiesRef.current.push(lineEntity);
-            console.log('Line entity added:', lineEntity);
-          }
           
-          // Update parent component with new points
+          // Draw the shape
+          drawShape(activePointsRef.current);
+          
+          // Update status
           const message = `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Double-click to finish.' : 'Continue adding points.'}`;
-          console.log('Updating parent state:', message);
           onDrawingStateChange(
             true, 
             [...activePointsRef.current], 
@@ -177,6 +248,7 @@ const CesiumViewer = forwardRef(({
           );
         }
       } else {
+        // Handle building clicks when not drawing
         const pickedObject = viewer.scene.pick(event.position);
         if (window.Cesium.defined(pickedObject) && 
             window.Cesium.defined(pickedObject.id) && 
@@ -186,63 +258,36 @@ const CesiumViewer = forwardRef(({
       }
     }, window.Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
+    // Double click handler
     handler.setInputAction((event) => {
-      console.log('Double click detected, isDrawing:', isDrawingRef.current, 'points:', activePointsRef.current.length);
+      console.log('Double click - isDrawing:', isDrawingRef.current, 'points:', activePointsRef.current.length);
       
       if (isDrawingRef.current && activePointsRef.current.length >= 3) {
+        console.log('Terminating shape via double click');
         terminateShape();
       }
     }, window.Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-    const terminateShape = () => {
-      console.log('Terminating shape with points:', activePointsRef.current.length);
-      
-      // CRITICAL: Store the points before any cleanup
-      const completedPoints = [...activePointsRef.current];
-      console.log('Storing completed points:', completedPoints);
-      
-      // Create a preview polygon
-      if (activePointsRef.current.length >= 3 && viewerRef.current) {
-        // Clear only the drawing aids (points and lines), keep the polygon
-        drawingEntitiesRef.current.forEach(entity => {
-          if (entity.point || entity.polyline) {
-            viewer.entities.remove(entity);
+    // Mouse move handler for floating point
+    handler.setInputAction((event) => {
+      if (isDrawingRef.current && activePointsRef.current.length > 0) {
+        const earthPosition = viewer.camera.pickEllipsoid(event.endPosition, viewer.scene.globe.ellipsoid);
+        if (window.Cesium.defined(earthPosition)) {
+          if (!floatingPointRef.current) {
+            floatingPointRef.current = viewer.entities.add({
+              position: earthPosition,
+              point: {
+                color: window.Cesium.Color.YELLOW.withAlpha(0.7),
+                pixelSize: 8,
+                heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND
+              }
+            });
+          } else {
+            floatingPointRef.current.position = earthPosition;
           }
-        });
-        drawingEntitiesRef.current = drawingEntitiesRef.current.filter(entity => 
-          !entity.point && !entity.polyline
-        );
-        
-        const previewPolygon = viewerRef.current.entities.add({
-          id: 'preview-polygon',
-          polygon: {
-            hierarchy: new window.Cesium.PolygonHierarchy(activePointsRef.current),
-            material: window.Cesium.Color.BLUE.withAlpha(0.3),
-            outline: true,
-            outlineColor: window.Cesium.Color.BLUE
-          }
-        });
-        drawingEntitiesRef.current.push(previewPolygon);
-        console.log('Preview polygon created:', previewPolygon);
+        }
       }
-      
-      isDrawingRef.current = false;
-      const message = `Footprint complete with ${activePointsRef.current.length} points. Enter AI command and click "Create Building".`;
-      console.log('Shape terminated, updating parent:', message);
-      
-      // CRITICAL: Pass the stored points to parent, not the current ref
-      onDrawingStateChange(
-        false, 
-        completedPoints, 
-        null, 
-        null, 
-        message
-      );
-      
-      // Keep the points in the ref for building creation
-      activePointsRef.current = completedPoints;
-      console.log('Points preserved in ref:', activePointsRef.current.length);
-    };
+    }, window.Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
     return () => {
       console.log('Cleaning up Cesium viewer...');
@@ -283,13 +328,6 @@ const CesiumViewer = forwardRef(({
       viewer.imageryLayers.addImageryProvider(getImageryProvider(currentLayer));
     }
   }, [currentLayer]);
-
-  // Handle drawing state changes
-  useEffect(() => {
-    console.log('Drawing state changed from parent:', isDrawing);
-    // Update internal drawing state
-    isDrawingRef.current = isDrawing;
-  }, [isDrawing]);
 
   return <div ref={containerRef} id="cesiumContainer" />;
 });
