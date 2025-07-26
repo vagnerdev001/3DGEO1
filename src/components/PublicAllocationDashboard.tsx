@@ -162,19 +162,19 @@ const PublicAllocationDashboard: React.FC = () => {
       baseline: [
         { metric_type: 'far', metric_value: 1.8, unit: 'ratio' },
         { metric_type: 'employment', metric_value: 2500, unit: 'jobs' },
-        { metric_type: 'revenue_annual', metric_value: 45000000, unit: 'ILS' },
+        { metric_type: 'revenue_annual', metric_value: 45, unit: 'M ILS' },
         { metric_type: 'public_services', metric_value: 35, unit: 'percentage' }
       ],
       alternative: [
         { metric_type: 'far', metric_value: 2.2, unit: 'ratio' },
         { metric_type: 'employment', metric_value: 3200, unit: 'jobs' },
-        { metric_type: 'revenue_annual', metric_value: 62000000, unit: 'ILS' },
+        { metric_type: 'revenue_annual', metric_value: 62, unit: 'M ILS' },
         { metric_type: 'public_services', metric_value: 45, unit: 'percentage' }
       ],
       proposed: [
         { metric_type: 'far', metric_value: 2.0, unit: 'ratio' },
         { metric_type: 'employment', metric_value: 2800, unit: 'jobs' },
-        { metric_type: 'revenue_annual', metric_value: 58000000, unit: 'ILS' },
+        { metric_type: 'revenue_annual', metric_value: 58, unit: 'M ILS' },
         { metric_type: 'public_services', metric_value: 40, unit: 'percentage' }
       ]
     };
@@ -233,12 +233,12 @@ const PublicAllocationDashboard: React.FC = () => {
   };
 
   const createRevenueProjections = async (planId: string, planName: string) => {
-    // Create revenue projections table if it doesn't exist
+    // Ensure revenue summary table exists before inserting data
     try {
-      const { error: createTableError } = await supabase.rpc('create_revenue_table');
-      // Ignore error if table already exists
+      await supabase.rpc('create_revenue_summary_table');
     } catch (error) {
-      // Table might already exist, continue
+      console.warn('Could not create revenue summary table:', error);
+      // Continue anyway - table might already exist
     }
 
     const revenueData = [];
@@ -268,19 +268,14 @@ const PublicAllocationDashboard: React.FC = () => {
       });
     }
 
-    // Try to insert into revenue table, create a simple table if it doesn't exist
+    // Insert revenue projections data
     try {
       const { error } = await supabase
         .from('revenue_summary_10_year')
         .upsert(revenueData, { onConflict: 'plan_name,revenue_source,projection_year' });
       
-      if (error && error.code === '42P01') {
-        // Table doesn't exist, create it
-        await supabase.rpc('create_revenue_summary_table');
-        // Try again
-        await supabase
-          .from('revenue_summary_10_year')
-          .upsert(revenueData, { onConflict: 'plan_name,revenue_source,projection_year' });
+      if (error) {
+        throw error;
       }
     } catch (error) {
       console.warn('Could not create revenue projections:', error);
@@ -480,7 +475,7 @@ const PublicAllocationDashboard: React.FC = () => {
                 <DollarSign size={32} color="#FF9800" style={{ marginBottom: '10px' }} />
                 <h4 style={{ margin: '0', color: '#E65100' }}>הכנסות שנתיות</h4>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#BF360C' }}>
-                  {formatCurrency(getMetricValue('revenue_annual'))}
+                  {formatCurrency(getMetricValue('revenue_annual') * 1000000)}
                 </div>
               </div>
 
