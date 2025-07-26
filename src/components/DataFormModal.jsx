@@ -26,7 +26,12 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     codeapp: '',
     height: '',
     ai_command: '',
-    floor_colors: []
+    floor_colors: [],
+    הערכת_מחיר_שמאי: '',
+    ערך_משוער_לפי_מאפייני_סביבה: '',
+    מחיר_ממוצע_למטר: '',
+    צרכים_ציבוריים: '',
+    שיוך_לרשות: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -188,6 +193,11 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
             <div><label htmlFor="codeapp">codeapp</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
             <div><label htmlFor="height">Height (m)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
             <div><label htmlFor="ai_command">AI Command</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
+            <div><label htmlFor="הערכת_מחיר_שמאי">הערכת מחיר שמאי</label><input type="text" id="הערכת_מחיר_שמאי" name="הערכת_מחיר_שמאי" value={formData.הערכת_מחיר_שמאי} onChange={handleInputChange} /></div>
+            <div><label htmlFor="ערך_משוער_לפי_מאפייני_סביבה">ערך משוער לפי מאפייני סביבה</label><input type="text" id="ערך_משוער_לפי_מאפייני_סביבה" name="ערך_משוער_לפי_מאפייני_סביבה" value={formData.ערך_משוער_לפי_מאפייני_סביבה} onChange={handleInputChange} /></div>
+            <div><label htmlFor="מחיר_ממוצע_למטר">מחיר ממוצע למטר</label><input type="text" id="מחיר_ממוצע_למטר" name="מחיר_ממוצע_למטר" value={formData.מחיר_ממוצע_למטר} onChange={handleInputChange} /></div>
+            <div><label htmlFor="צרכים_ציבוריים">צרכים ציבוריים</label><input type="text" id="צרכים_ציבוריים" name="צרכים_ציבוריים" value={formData.צרכים_ציבוריים} onChange={handleInputChange} /></div>
+            <div><label htmlFor="שיוך_לרשות">שיוך לרשות</label><input type="text" id="שיוך_לרשות" name="שיוך_לרשות" value={formData.שיוך_לרשות} onChange={handleInputChange} /></div>
             <div style={{gridColumn: '1 / -1'}}>
               <label>Floor Colors</label>
               <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px'}}>
