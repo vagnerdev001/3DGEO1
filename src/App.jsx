@@ -126,7 +126,6 @@ function App() {
         }
         
         // Clear drawing state and show data form
-        viewerRef.current.clearAll();
         setActiveShapePoints([]);
         setAiCommand('');
         setIsDrawing(false);
