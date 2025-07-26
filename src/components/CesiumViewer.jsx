@@ -253,7 +253,9 @@ const CesiumViewer = forwardRef(({
           console.log('❌ Could not calculate earth position');
         }
         return;
-      } else if (isDrawingRef.current) {
+      }
+      
+      if (isDrawingRef.current) {
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
           console.log('Adding point at:', earthPosition);
@@ -289,7 +291,9 @@ const CesiumViewer = forwardRef(({
             message
           );
         }
-      } else {
+      }
+      
+      if (!isPlacingObject && !isDrawingRef.current) {
         // Handle building clicks when not drawing
         const pickedObject = viewer.scene.pick(event.position);
         console.log('Picked object:', pickedObject);
