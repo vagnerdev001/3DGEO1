@@ -76,11 +76,12 @@ function App() {
 
     try {
       console.log('Calling AI with command:', aiCommand);
-      const height = await getExtrusionHeightFromAI(aiCommand);
-      console.log('AI returned height:', height);
+      const buildingData = await getExtrusionHeightFromAI(aiCommand);
+      console.log('AI returned building data:', buildingData);
       
-      if (height !== null && viewerRef.current) {
+      if (buildingData !== null && viewerRef.current) {
         const viewer = viewerRef.current.viewer;
+        const { height, floors } = buildingData;
         
         // Remove existing building if any
         if (extrudedBuilding) {
@@ -90,17 +91,7 @@ function App() {
         const buildingId = `building-${new Date().getTime()}`;
         console.log('Creating building with ID:', buildingId);
 
-        const building = viewer.entities.add({
-          id: buildingId,
-          isBuilding: true,
-          polygon: {
-            hierarchy: new window.Cesium.PolygonHierarchy(activeShapePoints),
-            extrudedHeight: height,
-            material: window.Cesium.Color.YELLOW.withAlpha(0.9),
-            outline: true,
-            outlineColor: window.Cesium.Color.BLACK
-          }
-        });
+        const building = createMultiFloorBuilding(viewer, buildingId, activeShapePoints, height, floors);
 
         console.log('Building entity created:', building);
         setExtrudedBuilding(building);
@@ -118,7 +109,8 @@ function App() {
           buildingId, 
           {
             height: height,
-            ai_command: aiCommand
+            ai_command: aiCommand,
+            num_floors: floors.toString()
           },
           geometryPoints,
           aiCommand,
@@ -127,7 +119,7 @@ function App() {
         
         if (saveResult.success) {
           console.log('Building saved successfully');
-          setStatusMessage(`Building created and saved! Height: ${height}m`);
+          setStatusMessage(`Building created and saved! Height: ${height}m, Floors: ${floors}`);
         } else {
           console.error('Save failed:', saveResult.error);
           setStatusMessage(`Building created but save failed: ${saveResult.error}`);
@@ -142,7 +134,7 @@ function App() {
         
       } else {
         console.error('Failed to create building - no height or viewer');
-        setStatusMessage('AI could not determine a height or viewer not available.');
+        setStatusMessage('AI could not determine building parameters or viewer not available.');
       }
     } catch (error) {
       console.error('Error calling Gemini API:', error);
@@ -154,7 +146,7 @@ function App() {
     console.log('Calling Gemini API with command:', userCommand);
     const geminiApiKey = 'AIzaSyD7he1t-eLRUPOjUvbSfImIBLhKelaoQbw';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
-    const prompt = `You are an assistant for a 3D mapping application. The user has provided an instruction to create a building. Your task is to determine the final height of the building in meters. Assume a standard floor is 3.5 meters high if the user specifies floors. Respond with ONLY the numerical value for the total height in meters. For example, if the user says 'make it 10 stories tall', you should respond with '35'. If the user says 'extrude to 100 feet', you should respond with '30.48'. If the user says 'build it 50 meters high', you should respond with '50'. User instruction: '${userCommand}'`;
+    const prompt = `You are an assistant for a 3D mapping application. The user has provided an instruction to create a building. Your task is to determine both the final height of the building in meters AND the number of floors. Assume a standard floor is 3.5 meters high if the user specifies floors. Respond with ONLY a JSON object in this format: {"height": 35, "floors": 10}. For example, if the user says 'make it 10 stories tall', you should respond with '{"height": 35, "floors": 10}'. If the user says 'extrude to 100 feet', you should respond with '{"height": 30.48, "floors": 9}'. If the user says 'build it 50 meters high', you should respond with '{"height": 50, "floors": 14}'. User instruction: '${userCommand}'`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     
     try {
@@ -175,15 +167,158 @@ function App() {
       
       if (result.candidates && result.candidates[0]?.content?.parts[0]) {
         const text = result.candidates[0].content.parts[0].text;
-        const height = parseFloat(text.trim());
-        console.log('Parsed height:', height);
-        return isNaN(height) ? null : height;
+        console.log('Raw AI response:', text);
+        try {
+          const parsed = JSON.parse(text.trim());
+          console.log('Parsed response:', parsed);
+          return {
+            height: parseFloat(parsed.height) || 0,
+            floors: parseInt(parsed.floors) || 1
+          };
+        } catch (parseError) {
+          console.error('Failed to parse JSON response:', parseError);
+          // Fallback to old behavior
+          const height = parseFloat(text.trim());
+          return isNaN(height) ? null : { height, floors: Math.max(1, Math.floor(height / 3.5)) };
+        }
       }
       return null;
     } catch (error) {
       console.error('Fetch error:', error);
       return null;
     }
+  };
+
+  // Create a multi-floor building with different colors per floor
+  const createMultiFloorBuilding = (viewer, buildingId, points, totalHeight, numFloors) => {
+    console.log(`Creating building with ${numFloors} floors, total height: ${totalHeight}m`);
+    
+    // Create rounded corners for the building footprint
+    const roundedPoints = createRoundedCorners(points, 2.0); // 2 meter radius for corners
+    
+    const floorHeight = totalHeight / numFloors;
+    const building = viewer.entities.add({
+      id: buildingId,
+      isBuilding: true
+    });
+    
+    // Generate colors for each floor (gradient from bottom to top)
+    const floorColors = generateFloorColors(numFloors);
+    
+    // Create each floor as a separate polygon
+    for (let floor = 0; floor < numFloors; floor++) {
+      const floorBottom = floor * floorHeight;
+      const floorTop = (floor + 1) * floorHeight;
+      
+      viewer.entities.add({
+        id: `${buildingId}-floor-${floor}`,
+        parent: building,
+        polygon: {
+          hierarchy: new window.Cesium.PolygonHierarchy(roundedPoints),
+          height: floorBottom,
+          extrudedHeight: floorTop,
+          material: floorColors[floor],
+          outline: true,
+          outlineColor: window.Cesium.Color.BLACK.withAlpha(0.3),
+          outlineWidth: 1
+        }
+      });
+    }
+    
+    return building;
+  };
+  
+  // Generate colors for floors (gradient from warm bottom to cool top)
+  const generateFloorColors = (numFloors) => {
+    const colors = [];
+    for (let i = 0; i < numFloors; i++) {
+      const ratio = i / Math.max(1, numFloors - 1);
+      
+      // Create a gradient from warm colors (bottom) to cool colors (top)
+      const hue = 0.15 - (ratio * 0.4); // From yellow-orange to blue-purple
+      const saturation = 0.7 - (ratio * 0.3); // Slightly less saturated at top
+      const brightness = 0.8 + (ratio * 0.2); // Slightly brighter at top
+      
+      const color = window.Cesium.Color.fromHsl(hue, saturation, brightness, 0.9);
+      colors.push(color);
+    }
+    return colors;
+  };
+  
+  // Create rounded corners for building footprint
+  const createRoundedCorners = (points, radius) => {
+    if (points.length < 3) return points;
+    
+    const roundedPoints = [];
+    const numSegments = 8; // Number of segments per rounded corner
+    
+    for (let i = 0; i < points.length; i++) {
+      const prevPoint = points[(i - 1 + points.length) % points.length];
+      const currentPoint = points[i];
+      const nextPoint = points[(i + 1) % points.length];
+      
+      // Convert to cartographic for easier calculation
+      const prevCarto = window.Cesium.Cartographic.fromCartesian(prevPoint);
+      const currentCarto = window.Cesium.Cartographic.fromCartesian(currentPoint);
+      const nextCarto = window.Cesium.Cartographic.fromCartesian(nextPoint);
+      
+      // Calculate vectors
+      const vec1Lon = prevCarto.longitude - currentCarto.longitude;
+      const vec1Lat = prevCarto.latitude - currentCarto.latitude;
+      const vec2Lon = nextCarto.longitude - currentCarto.longitude;
+      const vec2Lat = nextCarto.latitude - currentCarto.latitude;
+      
+      // Normalize vectors
+      const len1 = Math.sqrt(vec1Lon * vec1Lon + vec1Lat * vec1Lat);
+      const len2 = Math.sqrt(vec2Lon * vec2Lon + vec2Lat * vec2Lat);
+      
+      if (len1 > 0 && len2 > 0) {
+        const norm1Lon = vec1Lon / len1;
+        const norm1Lat = vec1Lat / len1;
+        const norm2Lon = vec2Lon / len2;
+        const norm2Lat = vec2Lat / len2;
+        
+        // Calculate the angle between vectors
+        const dot = norm1Lon * norm2Lon + norm1Lat * norm2Lat;
+        const angle = Math.acos(Math.max(-1, Math.min(1, dot)));
+        
+        // Only round if angle is sharp enough
+        if (angle < Math.PI * 0.9) {
+          const radiusInRadians = radius / 6371000; // Convert to radians (Earth radius)
+          
+          // Create rounded corner
+          for (let j = 0; j < numSegments; j++) {
+            const t = j / (numSegments - 1);
+            const cornerAngle = angle * (t - 0.5);
+            
+            const offsetLon = radiusInRadians * Math.cos(cornerAngle) * norm1Lon + 
+                             radiusInRadians * Math.sin(cornerAngle) * norm2Lon;
+            const offsetLat = radiusInRadians * Math.cos(cornerAngle) * norm1Lat + 
+                             radiusInRadians * Math.sin(cornerAngle) * norm2Lat;
+            
+            const roundedCarto = new window.Cesium.Cartographic(
+              currentCarto.longitude + offsetLon,
+              currentCarto.latitude + offsetLat,
+              currentCarto.height
+            );
+            
+            roundedPoints.push(window.Cesium.Cartesian3.fromRadians(
+              roundedCarto.longitude,
+              roundedCarto.latitude,
+              roundedCarto.height
+            ));
+          }
+        } else {
+          // Keep original point for obtuse angles
+          roundedPoints.push(currentPoint);
+        }
+      } else {
+        // Keep original point if vectors are invalid
+        roundedPoints.push(currentPoint);
+      }
+    }
+    
+    return roundedPoints.length > 0 ? roundedPoints : points;
   };
 
   // Debug: Log state changes
