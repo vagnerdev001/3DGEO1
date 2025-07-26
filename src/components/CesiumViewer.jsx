@@ -239,7 +239,7 @@ const CesiumViewer = forwardRef(({
           const latitude = window.Cesium.Math.toDegrees(cartographic.latitude);
           const height = cartographic.height;
           
-          console.log('📍 Object position selected:', { longitude, latitude, height });
+          console.log('📍 Object position selected, placing immediately:', { longitude, latitude, height });
           onObjectPositionSelect({ longitude, latitude, height });
         } else {
           console.log('❌ Could not get earth position from click');

@@ -128,6 +128,8 @@ const ObjectPlacer = ({
           <select 
             value={selectedModel} 
             onChange={(e) => setSelectedModel(e.target.value)}
+            name="model_id"
+            name="category_id"
             disabled={loading}
           >
             <option value="">בחר דגם...</option>
@@ -146,6 +148,7 @@ const ObjectPlacer = ({
           <input 
             type="text" 
             value={objectName}
+            name="objectName"
             onChange={(e) => setObjectName(e.target.value)}
             placeholder="הכנס שם מותאם אישית..."
           />
@@ -162,30 +165,18 @@ const ObjectPlacer = ({
             📍 התחל מיקום
           </button>
         ) : (
-          <>
-            <button 
-              className="place-object-btn"
-              onClick={handlePlaceObject}
-              disabled={!selectedPosition}
-            >
-              ✅ מקם אובייקט
-            </button>
-            <button 
-              className="cancel-placing-btn"
-              onClick={onCancelPlacing}
-            >
-              ❌ בטל
-            </button>
-          </>
+          <button 
+            className="cancel-placing-btn"
+            onClick={onCancelPlacing}
+          >
+            ❌ בטל מיקום
+          </button>
         )}
       </div>
 
       {isPlacing && (
         <div className="placing-status">
-          {selectedPosition ? 
-            `✅ מיקום נבחר (${selectedPosition.latitude?.toFixed(4)}, ${selectedPosition.longitude?.toFixed(4)}) - לחץ "מקם אובייקט"` : 
-            '📍 לחץ על המפה לבחירת מיקום (ודא שבחרת דגם)'
-          }
+          📍 לחץ על המפה למיקום האובייקט - הוא יישמר אוטומטית
         </div>
       )}
 

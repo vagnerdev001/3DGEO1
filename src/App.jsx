@@ -136,8 +136,81 @@ function App() {
 
   const handleObjectPositionSelect = (position) => {
     console.log('🎯 Position selected for object placement:', position);
-    setSelectedObjectPosition(position);
-    setStatusMessage(`מיקום נבחר: ${position.longitude.toFixed(6)}, ${position.latitude.toFixed(6)}`);
+    
+    // Immediately place the object when position is selected
+    handleDirectObjectPlacement(position);
+  };
+
+  const handleDirectObjectPlacement = async (position) => {
+    // Get the selected model from ObjectPlacer component
+    const selectedModel = document.querySelector('select[name="model_id"]')?.value;
+    const selectedCategory = document.querySelector('select[name="category_id"]')?.value;
+    const objectName = document.querySelector('input[name="objectName"]')?.value || '';
+    
+    if (!selectedModel) {
+      setStatusMessage('❌ אנא בחר דגם לפני המיקום');
+      return;
+    }
+
+    setStatusMessage('💾 שומר אובייקט...');
+
+    try {
+      const { objectsService } = await import('./services/objectsService');
+      
+      // Get model data
+      const modelsResult = await objectsService.getModelsByCategory(selectedCategory);
+      if (!modelsResult.success) {
+        throw new Error('Failed to get model data');
+      }
+      
+      const selectedModelData = modelsResult.data.find(m => m.id === selectedModel);
+      if (!selectedModelData) {
+        throw new Error('Model not found');
+      }
+
+      const objectData = {
+        model_id: selectedModel,
+        name: objectName || selectedModelData.name_he,
+        position: position,
+        scale: typeof selectedModelData.scale === 'string' ? 
+          JSON.parse(selectedModelData.scale) : 
+          (selectedModelData.scale || { x: 1, y: 1, z: 1 }),
+        rotation: typeof selectedModelData.rotation === 'string' ? 
+          JSON.parse(selectedModelData.rotation) : 
+          (selectedModelData.rotation || { x: 0, y: 0, z: 0 }),
+        properties: {}
+      };
+
+      console.log('📍 Placing object directly:', objectData);
+      
+      const result = await objectsService.placeObject(objectData);
+      
+      if (result.success) {
+        console.log('✅ Object placed and saved successfully');
+        setStatusMessage(`✅ אובייקט "${objectData.name}" נשמר והוצב בהצלחה!`);
+        
+        // Add to local state
+        setPlacedObjects(prev => [...prev, result.data]);
+        
+        // Display on map immediately
+        displayPlacedObjects([result.data]);
+        
+        // Reset placement state
+        setIsPlacingObject(false);
+        setSelectedObjectPosition(null);
+        
+        // Clear form
+        const nameInput = document.querySelector('input[name="objectName"]');
+        if (nameInput) nameInput.value = '';
+        
+      } else {
+        console.error('Failed to place object:', result.error);
+        setStatusMessage(`❌ שגיאה במיקום אובייקט: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error placing object:', error);
+      setStatusMessage(`❌ שגיאה במיקום אובייקט: ${error.message}`);
+    }
   };
 
   const loadSavedBuildings = async () => {
