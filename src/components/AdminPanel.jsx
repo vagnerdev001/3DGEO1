@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import ModelUploader from './ModelUploader';
 import './AdminPanel.css';
 
-const AdminPanel = () => {
+const AdminPanel = ({ onToggle }) => {
   const [showUploader, setShowUploader] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-
-  if (!isVisible) return null;
 
   return (
     <>
@@ -24,7 +21,7 @@ const AdminPanel = () => {
             </button>
             <button 
               className="panel-btn"
-              onClick={() => setIsVisible(false)}
+              onClick={() => onToggle && onToggle(false)}
               title="הסתר"
             >
               ✕

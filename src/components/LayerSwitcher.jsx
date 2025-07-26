@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import './LayerSwitcher.css';
 
-const LayerSwitcher = ({ currentLayer, onLayerChange }) => {
+const LayerSwitcher = ({ currentLayer, onLayerChange, onToggle }) => {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-
-  if (!isVisible) return null;
 
   const layers = [
     { id: 'osm', name: 'מפת רחובות' },
@@ -27,7 +24,7 @@ const LayerSwitcher = ({ currentLayer, onLayerChange }) => {
           </button>
           <button 
             className="panel-btn"
-            onClick={() => setIsVisible(false)}
+            onClick={() => onToggle && onToggle(false)}
             title="הסתר"
           >
             ✕

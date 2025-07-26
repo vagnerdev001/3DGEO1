@@ -8,12 +8,10 @@ const AIControls = ({
   onAiCommandChange, 
   onStartDrawing, 
   onCreateBuilding, 
-  canCreate 
+  canCreate,
+  onToggle
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-
-  if (!isVisible) return null;
 
   return (
     <div id="ai-controls" className={isMinimized ? 'minimized' : ''}>
@@ -29,7 +27,7 @@ const AIControls = ({
           </button>
           <button 
             className="panel-btn"
-            onClick={() => setIsVisible(false)}
+            onClick={() => onToggle && onToggle(false)}
             title="הסתר"
           >
             ✕

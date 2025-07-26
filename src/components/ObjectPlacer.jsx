@@ -7,7 +7,8 @@ const ObjectPlacer = ({
   onStartPlacing, 
   onCancelPlacing, 
   onObjectPlace,
-  selectedPosition 
+  selectedPosition,
+  onToggle
 }) => {
   const [categories, setCategories] = useState([]);
   const [models, setModels] = useState([]);
@@ -16,9 +17,6 @@ const ObjectPlacer = ({
   const [objectName, setObjectName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-
-  if (!isVisible) return null;
 
   useEffect(() => {
     loadCategories();
@@ -121,7 +119,7 @@ const ObjectPlacer = ({
           </button>
           <button 
             className="panel-btn"
-            onClick={() => setIsVisible(false)}
+            onClick={() => onToggle && onToggle(false)}
             title="הסתר"
           >
             ✕
