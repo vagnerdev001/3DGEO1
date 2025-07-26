@@ -532,11 +532,73 @@ function App() {
           }
           onSave={(message, shouldRefresh, transparency, isPreview = false) => {
             setStatusMessage(message);
-            if ((shouldRefresh || isPreview) && transparency !== undefined) {
+            if ((shouldRefresh || isPreview) && transparency !== undefined && viewerRef.current) {
               // Refresh the specific building with new transparency
               const building = savedBuildings.find(b => b.id === currentBuildingId);
               if (building && viewerRef.current && viewerRef.current.viewer) {
-                const viewer = viewerRef.current.viewer;
+                updateBuildingTransparency(building, transparency, isPreview);
+              }
+            } else if (shouldRefresh && !isPreview) {
+              // Reload all buildings to get the updated data
+              loadSavedBuildings();
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+
+  // Helper function to update building transparency
+  const updateBuildingTransparency = async (building, transparency, isPreview = false) => {
+    if (!viewerRef.current || !viewerRef.current.viewer) return;
+    
+    const viewer = viewerRef.current.viewer;
+    
+    // Remove existing building and floors
+    const existingBuilding = viewer.entities.getById(currentBuildingId);
+    if (existingBuilding) {
+      viewer.entities.remove(existingBuilding);
+    }
+    const floorEntities = viewer.entities.values.filter(entity => 
+      entity.id && entity.id.startsWith(`${currentBuildingId}-floor-`)
+    );
+    floorEntities.forEach(entity => {
+      viewer.entities.remove(entity);
+    });
+    
+    // Recreate with new transparency
+    if (building.geometry_points && building.geometry_points.length >= 3) {
+      const points = building.geometry_points.map(point => 
+        window.Cesium.Cartesian3.fromDegrees(
+          point.longitude, 
+          point.latitude, 
+          point.height || 0
+        )
+      );
+      
+      const height = parseFloat(building.height) || 30;
+      const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
+      
+      // Get the latest floor colors
+      let floorColors = building.floor_colors || [];
+      if (!isPreview) {
+        // For final save, get the latest data from database
+        try {
+          const buildingResult = await buildingService.getBuilding(currentBuildingId);
+          if (buildingResult.success && buildingResult.data && buildingResult.data.floor_colors) {
+            floorColors = buildingResult.data.floor_colors;
+          }
+        } catch (error) {
+          console.error('Error getting updated building data:', error);
+        }
+      }
+      
+      createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
+    }
+  };
+}
+
+export default App;
                 
                 // Remove existing building and floors
                 const existingBuilding = viewer.entities.getById(currentBuildingId);
