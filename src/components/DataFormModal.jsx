@@ -191,11 +191,11 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         onClose();
       } else {
         console.error('Error saving building:', result.error);
-        onSave && onSave('שגיאה בשמירת נתוני הבניין.');
+        onSave && onSave(`שגיאה בשמירת נתוני הבניין: ${result.error}`);
       }
     } catch (error) {
       console.error('Error saving building data:', error);
-      onSave && onSave('שגיאה בשמירת נתוני הבניין.');
+      onSave && onSave(`שגיאה בשמירת נתוני הבניין: ${error.message}`);
     } finally {
       setLoading(false);
     }

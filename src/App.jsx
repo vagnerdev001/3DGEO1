@@ -85,7 +85,7 @@ function App() {
         const height = parseFloat(building.height) || 30;
         const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
         const floorColors = building.floor_colors || [];
-        const transparency = parseFloat(building.transparency) || 0.9;
+        const transparency = 0.9; // Default transparency since it's not stored in DB
         
         createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
       }
@@ -213,7 +213,7 @@ function App() {
         const buildingId = `building-${new Date().getTime()}`;
         console.log('Creating building with ID:', buildingId);
 
-        const building = createMultiFloorBuilding(viewer, buildingId, activeShapePoints, height, floors);
+        const building = createMultiFloorBuilding(viewer, buildingId, activeShapePoints, height, floors, 0.9);
 
         console.log('Building entity created:', building);
         setExtrudedBuilding(building);
@@ -227,16 +227,21 @@ function App() {
           height: window.Cesium.Cartographic.fromCartesian(point).height
         }));
         
+        // Generate default floor colors
+        const defaultFloorColors = generateFloorColors(floors, 0.9).map(color => 
+          `#${color.red.toString(16).padStart(2, '0')}${color.green.toString(16).padStart(2, '0')}${color.blue.toString(16).padStart(2, '0')}`
+        );
+        
         const saveResult = await buildingService.saveBuilding(
           buildingId, 
           {
-            height: height,
-            ai_command: aiCommand,
-            num_floors: floors.toString()
+            num_floors: floors.toString(),
+            ai_command: aiCommand
           },
           geometryPoints,
           aiCommand,
-          height
+          height,
+          defaultFloorColors
         );
         
         if (saveResult.success) {
@@ -531,11 +536,17 @@ function App() {
                   
                   const height = parseFloat(building.height) || 30;
                   const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
-                  const floorColors = building.floor_colors || [];
+                  
+                  // Get updated floor colors from form data
+                  const updatedBuilding = savedBuildings.find(b => b.id === currentBuildingId);
+                  const floorColors = updatedBuilding ? updatedBuilding.floor_colors || [] : [];
                   
                   createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
                 }
               }
+            } else {
+              // Just reload all buildings to get the updated data
+              loadSavedBuildings();
             }
           }}
         />
