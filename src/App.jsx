@@ -50,7 +50,7 @@ function App() {
   };
 
   const handleBuildingClick = (buildingEntity) => {
-    console.log('Building clicked:', buildingEntity.id);
+    console.log('🏢 Building clicked:', buildingEntity.id);
     setCurrentBuildingId(buildingEntity.id);
     setShowDataForm(true);
   };
@@ -105,16 +105,23 @@ function App() {
           height: window.Cesium.Cartographic.fromCartesian(point).height
         }));
         
+        // Convert floor colors to hex strings for database storage
+        const floorColorsHex = floorColors.map(color => 
+          `#${color.red.toString(16).padStart(2, '0')}${color.green.toString(16).padStart(2, '0')}${color.blue.toString(16).padStart(2, '0')}`
+        );
+        
         const saveResult = await buildingService.saveBuilding(
           buildingId, 
           {
             height: height,
             ai_command: aiCommand,
-            num_floors: floors.toString()
+            num_floors: floors.toString(),
+            floor_colors: floorColorsHex
           },
           geometryPoints,
           aiCommand,
-          height
+          height,
+          floorColorsHex
         );
         
         if (saveResult.success) {

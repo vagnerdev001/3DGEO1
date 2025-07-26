@@ -25,7 +25,8 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     mi_address: '',
     codeapp: '',
     height: '',
-    ai_command: ''
+    ai_command: '',
+    floor_colors: []
   });
   const [loading, setLoading] = useState(false);
 
@@ -65,10 +66,11 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         formData, 
         formData.geometry_points, 
         formData.ai_command, 
-        parseFloat(formData.height) || 0
+        parseFloat(formData.height) || 0,
+        formData.floor_colors
       );
       if (result.success) {
-        onSave && onSave('Building data saved successfully!');
+        onSave && onSave(result.data || formData);
         onClose();
       } else {
         console.error('Error saving building:', result.error);
@@ -110,6 +112,26 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
             <div><label htmlFor="codeapp">codeapp</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
             <div><label htmlFor="height">Height (m)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
             <div><label htmlFor="ai_command">AI Command</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
+            <div style={{gridColumn: '1 / -1'}}>
+              <label>Floor Colors</label>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px'}}>
+                {formData.floor_colors && formData.floor_colors.map((color, index) => (
+                  <div key={index} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                    <span style={{fontSize: '12px', color: '#bbb'}}>Floor {index + 1}:</span>
+                    <input 
+                      type="color" 
+                      value={color} 
+                      onChange={(e) => {
+                        const newColors = [...formData.floor_colors];
+                        newColors[index] = e.target.value;
+                        setFormData(prev => ({...prev, floor_colors: newColors}));
+                      }}
+                      style={{width: '40px', height: '30px', border: 'none', borderRadius: '4px'}}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </form>
       </div>

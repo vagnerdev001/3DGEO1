@@ -8,24 +8,29 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Building data operations
 export const buildingService = {
   // Save building data
-  async saveBuilding(buildingId, data, geometryPoints = null, aiCommand = '', height = 0) {
+  async saveBuilding(buildingId, data, geometryPoints = null, aiCommand = '', height = 0, floorColors = []) {
     try {
       console.log('Saving building:', { buildingId, data, geometryPoints, aiCommand, height });
       
-      const { error } = await supabase
+      const buildingData = {
+        id: buildingId,
+        ...data,
+        geometry_points: geometryPoints,
+        ai_command: aiCommand,
+        height: height,
+        floor_colors: floorColors,
+        updated_at: new Date().toISOString()
+      };
+      
+      const { data: savedData, error } = await supabase
         .from('buildings')
-        .upsert({
-          id: buildingId,
-          ...data,
-          geometry_points: geometryPoints,
-          ai_command: aiCommand,
-          height: height,
-          updated_at: new Date().toISOString()
-        });
+        .upsert(buildingData)
+        .select()
+        .single();
 
       if (error) throw error;
       console.log('Building saved successfully');
-      return { success: true };
+      return { success: true, data: savedData };
     } catch (error) {
       console.error('Error saving building:', error);
       return { success: false, error: error.message };
