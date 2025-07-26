@@ -24,7 +24,6 @@ const CesiumViewer = forwardRef(({
     },
     cancelDrawing: () => {
       isDrawingRef.current = false;
-      activePointsRef.current = [];
       // Clear all drawing entities
       if (viewerRef.current) {
         drawingEntitiesRef.current.forEach(entity => {
@@ -32,6 +31,7 @@ const CesiumViewer = forwardRef(({
         });
       }
       drawingEntitiesRef.current = [];
+      activePointsRef.current = [];
       onDrawingStateChange(false, [], null, null, "Drawing cancelled. Click 'Start Drawing' to begin.");
     },
     clearDrawing: () => {
@@ -198,12 +198,13 @@ const CesiumViewer = forwardRef(({
         drawingEntitiesRef.current.push(previewPolygon);
       }
       isDrawingRef.current = false;
+      // Keep the points for building creation
       onDrawingStateChange(
         false, 
         [...activePointsRef.current], 
         null, 
         null, 
-        'Footprint complete. Enter AI command and click "Create Building".'
+        `Footprint complete with ${activePointsRef.current.length} points. Enter AI command and click "Create Building".`
       );
     };
 

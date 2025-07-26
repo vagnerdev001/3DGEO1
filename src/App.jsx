@@ -28,8 +28,9 @@ function App() {
   const handleStartDrawing = () => {
     if (viewerRef.current) {
       if (isDrawing) {
-        // Stop/Cancel drawing
+        // Cancel drawing - clear everything
         viewerRef.current.cancelDrawing();
+        setActiveShapePoints([]);
       } else {
         // Start drawing
         viewerRef.current.startDrawing();
@@ -164,7 +165,7 @@ function App() {
         onAiCommandChange={setAiCommand}
         onStartDrawing={handleStartDrawing}
         onCreateBuilding={handleCreateBuilding}
-        canCreate={activeShapePoints.length >= 3 && !isDrawing}
+        canCreate={activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0}
       />
       <LayerSwitcher
         currentLayer={currentLayer}
