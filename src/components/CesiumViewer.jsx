@@ -89,21 +89,12 @@ const CesiumViewer = forwardRef(({
         if (window.Cesium.defined(earthPosition)) {
           activePointsRef.current.push(earthPosition);
           
-          // Update parent component with new points
-          onDrawingStateChange(
-            true, 
-            [...activePointsRef.current], 
-            null, 
-            null, 
-            `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Double-click to finish.' : 'Continue adding points.'}`
-          );
-          
           // Add visual point
           const pointEntity = viewer.entities.add({
             position: earthPosition,
             point: {
               color: window.Cesium.Color.RED,
-              pixelSize: 5,
+              pixelSize: 8,
               heightReference: window.Cesium.HeightReference.NONE
             }
           });
@@ -117,12 +108,21 @@ const CesiumViewer = forwardRef(({
                   activePointsRef.current[activePointsRef.current.length - 2], 
                   activePointsRef.current[activePointsRef.current.length - 1]
                 ],
-                width: 2,
+                width: 3,
                 material: window.Cesium.Color.CORAL
               }
             });
             drawingEntitiesRef.current.push(lineEntity);
           }
+          
+          // Update parent component with new points
+          onDrawingStateChange(
+            true, 
+            [...activePointsRef.current], 
+            null, 
+            null, 
+            `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Double-click to finish.' : 'Continue adding points.'}`
+          );
         }
       } else {
         const pickedObject = viewer.scene.pick(event.position);
@@ -141,9 +141,18 @@ const CesiumViewer = forwardRef(({
     }, window.Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
     const terminateShape = () => {
-      clearDrawingAids();
       // Create a preview polygon
       if (activePointsRef.current.length >= 3 && viewerRef.current) {
+        // Clear only the drawing aids (points and lines), keep the polygon
+        drawingEntitiesRef.current.forEach(entity => {
+          if (entity.point || entity.polyline) {
+            viewer.entities.remove(entity);
+          }
+        });
+        drawingEntitiesRef.current = drawingEntitiesRef.current.filter(entity => 
+          !entity.point && !entity.polyline
+        );
+        
         const previewPolygon = viewerRef.current.entities.add({
           polygon: {
             hierarchy: new window.Cesium.PolygonHierarchy(activePointsRef.current),
@@ -163,11 +172,6 @@ const CesiumViewer = forwardRef(({
       );
     };
 
-    const clearDrawingAids = () => {
-      drawingEntitiesRef.current.forEach(entity => viewer.entities.remove(entity));
-      drawingEntitiesRef.current = [];
-    };
-
     return () => {
       if (handlerRef.current) {
         handlerRef.current.destroy();
@@ -182,14 +186,14 @@ const CesiumViewer = forwardRef(({
 
   // Handle drawing state changes
   useEffect(() => {
-    if (!isDrawing && viewerRef.current && !viewerRef.current.isDestroyed() && activeShapePoints.length === 0) {
-      // Clear drawing aids when stopping drawing
+    if (!isDrawing && viewerRef.current && !viewerRef.current.isDestroyed()) {
+      // Clear all drawing entities when canceling drawing
       drawingEntitiesRef.current.forEach(entity => viewerRef.current.entities.remove(entity));
       drawingEntitiesRef.current = [];
       
       activePointsRef.current = [];
     }
-  }, [isDrawing, activeShapePoints.length]);
+  }, [isDrawing]);
 
   return <div ref={containerRef} id="cesiumContainer" />;
 });
