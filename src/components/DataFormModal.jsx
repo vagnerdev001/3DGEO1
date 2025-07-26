@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { saveBuildingData, getBuildingData } from '../services/firebase';
+import React, { useState, useEffect } from 'react';
+import { buildingService } from '../services/supabase';
 import './DataFormModal.css';
 
-const DataFormModal = ({ buildingId, onClose, onSave }) => {
+const DataFormModal = ({ isOpen, onClose, buildingId }) => {
   const [formData, setFormData] = useState({
-    WKT: '',
+    wkt: '',
     full_addres_Q: '',
-    STREET_COD: '',
-    BLDG_NUM: '',
-    BLDG_TYPE: '',
-    NUM_FLOORS: '',
-    STREET_C_1: '',
-    BLDG_NUM_2: '',
-    StreetIs_Tama: '',
-    No_Floors: '',
+    street_cod: '',
+    bldg_num: '',
+    bldg_type: '',
+    num_floors: '',
+    street_c_1: '',
+    bldg_num_2: '',
+    street_is_tama: '',
+    no_floors: '',
     no_apt: '',
-    ST_Code: '',
-    STREET_1: '',
+    st_code: '',
+    street_1: '',
     color: '',
     מיון_2: '',
     masadcolor2: '',
@@ -25,18 +25,27 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     mi_address: '',
     codeapp: ''
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loadBuildingData = async () => {
-      if (buildingId) {
-        const data = await getBuildingData(buildingId);
-        if (data) {
-          setFormData(data);
-        }
+    if (isOpen && buildingId) {
+      loadBuildingData();
+    }
+  }, [isOpen, buildingId]);
+
+  const loadBuildingData = async () => {
+    setLoading(true);
+    try {
+      const result = await buildingService.getBuilding(buildingId);
+      if (result.success && result.data) {
+        setFormData(result.data);
       }
-    };
-    loadBuildingData();
-  }, [buildingId]);
+    } catch (error) {
+      console.error('Error loading building data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,19 +56,20 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
   };
 
   const handleSave = async () => {
-    if (!buildingId) return;
-
+    setLoading(true);
     try {
-      await saveBuildingData(buildingId, formData);
-      onSave(`Data saved for building ${buildingId}`);
-      onClose();
+      const result = await buildingService.saveBuilding(buildingId, formData);
+      if (result.success) {
+        onClose();
+      } else {
+        console.error('Error saving building:', result.error);
+      }
     } catch (error) {
-      console.error("Error saving data: ", error);
-      onSave('Error saving data.');
+      console.error('Error saving building data:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const formFields = Object.keys(formData);
 
   return (
     <div id="data-form-modal">
@@ -67,28 +77,34 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
       <div id="data-form-container">
         <form id="building-data-form">
           <div className="form-grid">
-            {formFields.map(field => (
-              <div key={field}>
-                <label htmlFor={field}>{field}</label>
-                <input
-                  type="text"
-                  id={field}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleInputChange}
-                />
-              </div>
-            ))}
+            <div><label htmlFor="wkt">WKT</label><input type="text" id="wkt" name="wkt" value={formData.wkt} onChange={handleInputChange} /></div>
+            <div><label htmlFor="full_addres_Q">full_addres_Q</label><input type="text" id="full_addres_Q" name="full_addres_Q" value={formData.full_addres_Q} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_cod">street_cod</label><input type="text" id="street_cod" name="street_cod" value={formData.street_cod} onChange={handleInputChange} /></div>
+            <div><label htmlFor="bldg_num">bldg_num</label><input type="text" id="bldg_num" name="bldg_num" value={formData.bldg_num} onChange={handleInputChange} /></div>
+            <div><label htmlFor="bldg_type">bldg_type</label><input type="text" id="bldg_type" name="bldg_type" value={formData.bldg_type} onChange={handleInputChange} /></div>
+            <div><label htmlFor="num_floors">num_floors</label><input type="text" id="num_floors" name="num_floors" value={formData.num_floors} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_c_1">street_c_1</label><input type="text" id="street_c_1" name="street_c_1" value={formData.street_c_1} onChange={handleInputChange} /></div>
+            <div><label htmlFor="bldg_num_2">bldg_num_2</label><input type="text" id="bldg_num_2" name="bldg_num_2" value={formData.bldg_num_2} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_is_tama">street_is_tama</label><input type="text" id="street_is_tama" name="street_is_tama" value={formData.street_is_tama} onChange={handleInputChange} /></div>
+            <div><label htmlFor="no_floors">no_floors</label><input type="text" id="no_floors" name="no_floors" value={formData.no_floors} onChange={handleInputChange} /></div>
+            <div><label htmlFor="no_apt">no_apt</label><input type="text" id="no_apt" name="no_apt" value={formData.no_apt} onChange={handleInputChange} /></div>
+            <div><label htmlFor="st_code">st_code</label><input type="text" id="st_code" name="st_code" value={formData.st_code} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_1">street_1</label><input type="text" id="street_1" name="street_1" value={formData.street_1} onChange={handleInputChange} /></div>
+            <div><label htmlFor="color">color</label><input type="text" id="color" name="color" value={formData.color} onChange={handleInputChange} /></div>
+            <div><label htmlFor="מיון_2">מיון_2</label><input type="text" id="מיון_2" name="מיון_2" value={formData.מיון_2} onChange={handleInputChange} /></div>
+            <div><label htmlFor="masadcolor2">masadcolor2</label><input type="text" id="masadcolor2" name="masadcolor2" value={formData.masadcolor2} onChange={handleInputChange} /></div>
+            <div><label htmlFor="color_sofi">color_sofi</label><input type="text" id="color_sofi" name="color_sofi" value={formData.color_sofi} onChange={handleInputChange} /></div>
+            <div><label htmlFor="full_addresse">full_addresse</label><input type="text" id="full_addresse" name="full_addresse" value={formData.full_addresse} onChange={handleInputChange} /></div>
+            <div><label htmlFor="mi_address">mi_address</label><input type="text" id="mi_address" name="mi_address" value={formData.mi_address} onChange={handleInputChange} /></div>
+            <div><label htmlFor="codeapp">codeapp</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
           </div>
         </form>
       </div>
-      <div id="data-form-buttons">
-        <button id="save-data-button" onClick={handleSave}>
-          Save Data
+      <div className="form-buttons">
+        <button onClick={handleSave} disabled={loading}>
+          {loading ? 'Saving...' : 'Save Data'}
         </button>
-        <button id="close-form-button" onClick={onClose}>
-          Close
-        </button>
+        <button onClick={onClose}>Close</button>
       </div>
     </div>
   );
