@@ -105,9 +105,16 @@ function App() {
     });
     
     // Use saved colors or generate new ones
-    const floorColors = savedFloorColors && savedFloorColors.length === numFloors 
-      ? savedFloorColors.map(colorHex => window.Cesium.Color.fromCssColorString(colorHex).withAlpha(transparency))
-      : generateFloorColors(numFloors, transparency);
+    let floorColors;
+    if (savedFloorColors && savedFloorColors.length === numFloors) {
+      // Apply transparency to saved colors
+      floorColors = savedFloorColors.map(colorHex => 
+        window.Cesium.Color.fromCssColorString(colorHex).withAlpha(transparency)
+      );
+    } else {
+      // Generate new colors with transparency
+      floorColors = generateFloorColors(numFloors, transparency);
+    }
     
     // Create each floor as a separate polygon
     for (let floor = 0; floor < numFloors; floor++) {
@@ -309,7 +316,7 @@ function App() {
   };
 
   // Create a multi-floor building with different colors per floor
-  const createMultiFloorBuilding = (viewer, buildingId, points, totalHeight, numFloors) => {
+  const createMultiFloorBuilding = (viewer, buildingId, points, totalHeight, numFloors, transparency = 0.9) => {
     console.log(`Creating building with ${numFloors} floors, total height: ${totalHeight}m`);
     
     // Create rounded corners for the building footprint
@@ -322,7 +329,7 @@ function App() {
     });
     
     // Generate colors for each floor (gradient from bottom to top)
-    const floorColors = generateFloorColors(numFloors);
+    const floorColors = generateFloorColors(numFloors, transparency);
     
     // Create each floor as a separate polygon
     for (let floor = 0; floor < numFloors; floor++) {
@@ -492,10 +499,44 @@ function App() {
             setShowDataForm(false);
             setCurrentBuildingId(null);
           }}
-          onSave={(message, shouldRefresh) => {
+          onSave={(message, shouldRefresh, transparency) => {
             setStatusMessage(message);
-            // Don't refresh building display to avoid removing current building
-            // Colors are saved to database but building stays on map
+            if (shouldRefresh && transparency !== undefined) {
+              // Refresh the specific building with new transparency
+              const building = savedBuildings.find(b => b.id === currentBuildingId);
+              if (building && viewerRef.current && viewerRef.current.viewer) {
+                const viewer = viewerRef.current.viewer;
+                
+                // Remove existing building and floors
+                const existingBuilding = viewer.entities.getById(currentBuildingId);
+                if (existingBuilding) {
+                  viewer.entities.remove(existingBuilding);
+                }
+                const floorEntities = viewer.entities.values.filter(entity => 
+                  entity.id && entity.id.startsWith(`${currentBuildingId}-floor-`)
+                );
+                floorEntities.forEach(entity => {
+                  viewer.entities.remove(entity);
+                });
+                
+                // Recreate with new transparency
+                if (building.geometry_points && building.geometry_points.length >= 3) {
+                  const points = building.geometry_points.map(point => 
+                    window.Cesium.Cartesian3.fromDegrees(
+                      point.longitude, 
+                      point.latitude, 
+                      point.height || 0
+                    )
+                  );
+                  
+                  const height = parseFloat(building.height) || 30;
+                  const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
+                  const floorColors = building.floor_colors || [];
+                  
+                  createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
+                }
+              }
+            }
           }}
         />
       )}

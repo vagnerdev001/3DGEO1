@@ -174,6 +174,9 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
   const handleSave = async () => {
     setLoading(true);
     try {
+      // Get the current transparency value
+      const currentTransparency = parseFloat(formData.transparency) || 0.9;
+      
       const result = await buildingService.saveBuilding(
         buildingId, 
         formData, 
@@ -183,7 +186,8 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         formData.floor_colors
       );
       if (result.success) {
-        onSave && onSave('נתוני הבניין נשמרו בהצלחה!', false); // Don't refresh building display
+        // Trigger building refresh with new transparency
+        onSave && onSave('נתוני הבניין נשמרו בהצלחה!', true, currentTransparency);
         onClose();
       } else {
         console.error('Error saving building:', result.error);
