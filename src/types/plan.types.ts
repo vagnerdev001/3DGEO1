@@ -110,3 +110,9 @@ export interface PlanComparison {
   created_by?: string;
   created_at: Date;
 }
+
+export interface ServiceResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
