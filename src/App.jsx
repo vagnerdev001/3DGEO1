@@ -475,7 +475,13 @@ function App() {
             setShowDataForm(false);
             setCurrentBuildingId(null);
           }}
-          onSave={(message) => setStatusMessage(message)}
+          onSave={(message, shouldRefresh) => {
+            setStatusMessage(message);
+            if (shouldRefresh) {
+              // Refresh the building display with updated colors
+              loadSavedBuildings();
+            }
+          }}
         />
       )}
     </div>
