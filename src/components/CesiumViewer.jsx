@@ -43,11 +43,27 @@ const CesiumViewer = forwardRef(({
     // Initialize scene
     const initializeScene = async () => {
       try {
+        // Check if viewer is still valid before proceeding
+        if (!viewer || viewer.isDestroyed()) {
+          return;
+        }
+        
         const osmBuildings = await window.Cesium.createOsmBuildingsAsync();
+        
+        // Check again after async operation
+        if (!viewer || viewer.isDestroyed()) {
+          return;
+        }
+        
         viewer.scene.primitives.add(osmBuildings);
         osmBuildings.style = new window.Cesium.Cesium3DTileStyle({ 
           color: "color('rgba(200, 200, 200, 0.8)')" 
         });
+        
+        // Check once more before camera operation
+        if (!viewer || viewer.isDestroyed()) {
+          return;
+        }
         
         await viewer.camera.flyTo({
           destination: window.Cesium.Cartesian3.fromDegrees(34.7818, 32.0853, 2500),
@@ -134,16 +150,18 @@ const CesiumViewer = forwardRef(({
     return () => {
       if (handlerRef.current) {
         handlerRef.current.destroy();
+        handlerRef.current = null;
       }
       if (viewerRef.current) {
         viewerRef.current.destroy();
+        viewerRef.current = null;
       }
     };
   }, []);
 
   // Handle drawing state changes
   useEffect(() => {
-    if (!isDrawing && viewerRef.current) {
+    if (!isDrawing && viewerRef.current && !viewerRef.current.isDestroyed()) {
       // Clear drawing aids when stopping drawing
       drawingEntitiesRef.current.forEach(entity => viewerRef.current.entities.remove(entity));
       drawingEntitiesRef.current = [];
