@@ -7,6 +7,7 @@ import LayerSwitcher from './components/LayerSwitcher';
 import AdminPanel from './components/AdminPanel';
 import ObjectPlacer from './components/ObjectPlacer';
 import { UrbanPlansDashboard } from './components/UrbanPlansDashboard';
+import TestPlanData from './components/TestPlanData';
 import { buildingService } from './services/supabase';
 import './App.css';
 
@@ -44,6 +45,7 @@ function App() {
   // Plans Dashboard state
   const [showPlansDashboard, setShowPlansDashboard] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [showTestData, setShowTestData] = useState(false);
 
   const handleWidgetVisibilityChange = (widgetName, isVisible) => {
     setWidgetVisibility(prev => ({
@@ -1162,7 +1164,50 @@ function App() {
             🏗️ לוח תוכניות
           </button>
         )}
+        {!showTestData && (
+          <button 
+            className="window-menu-btn test-data"
+            onClick={() => setShowTestData(true)}
+            style={{ background: 'rgba(255, 193, 7, 0.8)' }}
+          >
+            🧪 בדיקת נתונים
+          </button>
+        )}
       </div>
+      
+      {/* Test Data Component */}
+      {showTestData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'white',
+          zIndex: 2000,
+          overflow: 'auto'
+        }}>
+          <button
+            onClick={() => setShowTestData(false)}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              zIndex: 2001,
+              padding: '10px 15px',
+              backgroundColor: '#f44336',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            ✕ סגור
+          </button>
+          <TestPlanData />
+        </div>
+      )}
     </>
   );
 }
