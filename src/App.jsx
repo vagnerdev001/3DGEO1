@@ -169,7 +169,9 @@ function App() {
         const text = result.candidates[0].content.parts[0].text;
         console.log('Raw AI response:', text);
         try {
-          const parsed = JSON.parse(text.trim());
+          // Remove markdown code block delimiters if present
+          const cleanedText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          const parsed = JSON.parse(cleanedText);
           console.log('Parsed response:', parsed);
           return {
             height: parseFloat(parsed.height) || 0,
