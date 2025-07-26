@@ -728,7 +728,7 @@ function App() {
         onDrawingStateChange={handleDrawingStateChange}
         onBuildingClick={handleBuildingClick}
         isPlacingObject={isPlacingObject}
-        onObjectPositionSelect={setSelectedObjectPosition}
+        onObjectPositionSelect={handleObjectPositionSelect}
       />
       <AIControls
         isDrawing={isDrawing}

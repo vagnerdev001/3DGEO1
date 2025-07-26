@@ -183,8 +183,8 @@ const ObjectPlacer = ({
       {isPlacing && (
         <div className="placing-status">
           {selectedPosition ? 
-            '✅ מיקום נבחר - לחץ "מקם אובייקט"' : 
-            '📍 לחץ על המפה לבחירת מיקום'
+            `✅ מיקום נבחר (${selectedPosition.latitude?.toFixed(4)}, ${selectedPosition.longitude?.toFixed(4)}) - לחץ "מקם אובייקט"` : 
+            '📍 לחץ על המפה לבחירת מיקום (ודא שבחרת דגם)'
           }
         </div>
       )}
