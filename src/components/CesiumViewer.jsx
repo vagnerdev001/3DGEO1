@@ -20,7 +20,7 @@ const CesiumViewer = forwardRef(({
     viewer: viewerRef.current,
     getActivePoints: () => activePointsRef.current,
     startDrawing: () => {
-      console.log('Starting drawing...');
+      console.log('=== STARTING DRAWING ===');
       isDrawingRef.current = true;
       activePointsRef.current = [];
       drawingEntitiesRef.current = [];
@@ -30,7 +30,7 @@ const CesiumViewer = forwardRef(({
         viewerRef.current.entities.removeAll();
       }
       
-      onDrawingStateChange(true, [], null, null, "Click to add points. Double-click to finish.");
+      onDrawingStateChange(true, [], null, null, "Click to add points. Right-click to finish.");
     },
     finishDrawing: () => {
       console.log('Finishing drawing with points:', activePointsRef.current.length);
@@ -71,7 +71,7 @@ const CesiumViewer = forwardRef(({
   }));
 
   const terminateShape = () => {
-    console.log('=== TERMINATING SHAPE ===');
+    console.log('=== TERMINATING SHAPE (RIGHT-CLICK) ===');
     console.log('Points before termination:', activePointsRef.current.length);
     
     if (activePointsRef.current.length < 3) {
@@ -81,7 +81,7 @@ const CesiumViewer = forwardRef(({
 
     // Store the completed points BEFORE any cleanup
     const completedPoints = [...activePointsRef.current];
-    console.log('Completed points stored:', completedPoints.length);
+    console.log('✅ Completed points stored:', completedPoints.length);
     
     // Stop drawing mode
     isDrawingRef.current = false;
@@ -113,11 +113,11 @@ const CesiumViewer = forwardRef(({
     }
     
     // KEEP the points in the ref for building creation
-    // DO NOT clear activePointsRef.current here!
+    console.log('✅ Points preserved in activePointsRef:', activePointsRef.current.length);
     
     // Update parent with completed points
     const message = `Footprint complete with ${completedPoints.length} points. Enter AI command and click "Create Building".`;
-    console.log('Calling onDrawingStateChange with:', completedPoints.length, 'points');
+    console.log('✅ Calling onDrawingStateChange with:', completedPoints.length, 'points');
     
     onDrawingStateChange(
       false, // not drawing anymore
@@ -127,7 +127,7 @@ const CesiumViewer = forwardRef(({
       message
     );
     
-    console.log('=== SHAPE TERMINATED ===');
+    console.log('=== SHAPE TERMINATED SUCCESSFULLY ===');
   };
 
   const drawShape = (positionData) => {
@@ -244,7 +244,7 @@ const CesiumViewer = forwardRef(({
           drawShape(activePointsRef.current);
           
           // Update status
-          const message = `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Double-click to finish.' : 'Continue adding points.'}`;
+          const message = `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Right-click to finish.' : 'Continue adding points.'}`;
           onDrawingStateChange(
             true, 
             [...activePointsRef.current], 
@@ -266,13 +266,13 @@ const CesiumViewer = forwardRef(({
 
     // Double click handler
     handler.setInputAction((event) => {
-      console.log('Double click - isDrawing:', isDrawingRef.current, 'points:', activePointsRef.current.length);
+      console.log('Right click - isDrawing:', isDrawingRef.current, 'points:', activePointsRef.current.length);
       
       if (isDrawingRef.current && activePointsRef.current.length >= 3) {
-        console.log('Terminating shape via double click');
+        console.log('Terminating shape via right click');
         terminateShape();
       }
-    }, window.Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+    }, window.Cesium.ScreenSpaceEventType.RIGHT_CLICK);
 
     // Mouse move handler for floating point
     handler.setInputAction((event) => {

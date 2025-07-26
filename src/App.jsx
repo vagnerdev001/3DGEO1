@@ -18,7 +18,12 @@ function App() {
   const viewerRef = useRef(null);
 
   const handleDrawingStateChange = (drawing, points, building, buildingId, message) => {
-    console.log('Drawing state change:', { drawing, pointsCount: points.length, message });
+    console.log('🔄 APP: Drawing state change:', { 
+      drawing, 
+      pointsCount: points.length, 
+      message,
+      isDrawingNow: drawing
+    });
     setIsDrawing(drawing);
     setActiveShapePoints(points);
     setExtrudedBuilding(building);
@@ -27,21 +32,21 @@ function App() {
   };
 
   const handleStartDrawing = () => {
-    console.log('Start drawing button clicked, current state:', { isDrawing, pointsCount: activeShapePoints.length });
+    console.log('🔘 BUTTON: Start/Finish drawing clicked');
     console.log('Current state - isDrawing:', isDrawing, 'activeShapePoints:', activeShapePoints.length);
+    
     if (viewerRef.current) {
       if (isDrawing) {
-        console.log('Canceling current drawing...');
-        viewerRef.current.cancelDrawing();
+        console.log('🔴 Finishing current drawing...');
+        viewerRef.current.finishDrawing();
       } else {
-        console.log('Starting new drawing session...');
+        console.log('🟢 Starting new drawing session...');
         viewerRef.current.startDrawing();
+        // Reset local state when starting new drawing
+        setActiveShapePoints([]);
+        setAiCommand('');
       }
     }
-    
-    // Reset local state
-    setActiveShapePoints([]);
-    setAiCommand('');
   };
 
   const handleBuildingClick = (buildingEntity) => {
@@ -49,19 +54,19 @@ function App() {
     setCurrentBuildingId(buildingEntity.id);
     setShowDataForm(true);
   };
-
-  const handleCreateBuilding = async () => {
-    console.log('activeShapePoints:', activeShapePoints.length);
-    console.log('aiCommand:', aiCommand);
+    console.log('Viewer points:', viewerPoints.length);
+    console.log('🏗️ CREATE BUILDING CLICKED');
+    const pointsToUse = activeShapePoints.length > 0 ? activeShapePoints : viewerPoints;
+    console.log('✅ Points to use for building:', pointsToUse.length);
 
     if (activeShapePoints.length < 3) {
-      console.error('Not enough points for building creation');
+      console.error('❌ Not enough points for building creation');
       alert('Please draw a valid building footprint first.');
       return;
     }
     
     if (!aiCommand.trim()) {
-      console.error('No AI command provided');
+      console.error('❌ No AI command provided');
       alert('Please enter a command for the AI.');
       return;
     }
