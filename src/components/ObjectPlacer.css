@@ -1,0 +1,128 @@
+.object-placer {
+  position: absolute;
+  top: 20px;
+  left: 380px;
+  background: rgba(38, 38, 38, 0.9);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  color: #fff;
+  min-width: 280px;
+  max-width: 320px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 10;
+  direction: rtl;
+  text-align: right;
+}
+
+.object-placer h3 {
+  margin-top: 0;
+  font-size: 18px;
+  border-bottom: 1px solid #555;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #bbb;
+  text-align: right;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #666;
+  background-color: #333;
+  color: #fff;
+  box-sizing: border-box;
+  text-align: right;
+  direction: rtl;
+  font-size: 14px;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.start-placing-btn,
+.place-object-btn,
+.cancel-placing-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.start-placing-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+.start-placing-btn:hover:not(:disabled) {
+  background-color: #1976D2;
+}
+
+.place-object-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.place-object-btn:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.cancel-placing-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.cancel-placing-btn:hover {
+  background-color: #d32f2f;
+}
+
+.start-placing-btn:disabled,
+.place-object-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.placing-status {
+  background: rgba(33, 150, 243, 0.2);
+  border: 1px solid #2196F3;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 13px;
+  text-align: center;
+  color: #81D4FA;
+}
+
+.loading {
+  text-align: center;
+  color: #4CAF50;
+  font-size: 13px;
+  margin-top: 10px;
+}
