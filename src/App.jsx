@@ -493,10 +493,8 @@ function App() {
           }}
           onSave={(message, shouldRefresh) => {
             setStatusMessage(message);
-            if (shouldRefresh) {
-              // Refresh the building display with updated colors
-              loadSavedBuildings();
-            }
+            // Don't refresh building display to avoid removing current building
+            // Colors are saved to database but building stays on map
           }}
         />
       )}
