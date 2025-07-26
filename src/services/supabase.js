@@ -12,6 +12,15 @@ export const buildingService = {
     try {
       console.log('Saving building:', { buildingId, data, geometryPoints, aiCommand, height });
       
+      // Validate required data
+      if (!buildingId) {
+        throw new Error('Building ID is required');
+      }
+      
+      if (!geometryPoints || geometryPoints.length < 3) {
+        throw new Error('Valid geometry points are required (minimum 3 points)');
+      }
+      
       // Only include fields that exist in the database schema
       const validFields = {
         wkt: data.wkt || '',
@@ -41,10 +50,13 @@ export const buildingService = {
         ...validFields,
         geometry_points: geometryPoints,
         ai_command: aiCommand,
-        height: parseFloat(height) || 0,
+        height: Number(height) || 0,
         floor_colors: floorColors,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+      
+      console.log('Final building data to save:', buildingData);
       
       const { data: savedData, error } = await supabase
         .from('buildings')
@@ -53,7 +65,7 @@ export const buildingService = {
         .single();
 
       if (error) throw error;
-      console.log('Building saved successfully');
+      console.log('Building saved successfully:', savedData);
       return { success: true, data: savedData };
     } catch (error) {
       console.error('Error saving building:', error);

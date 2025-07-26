@@ -26,7 +26,9 @@ function App() {
 
   const loadSavedBuildings = async () => {
     try {
+      console.log('Loading saved buildings...');
       const result = await buildingService.getAllBuildings();
+      console.log('Load result:', result);
       if (result.success && result.data) {
         console.log('טוען בניינים שמורים:', result.data.length);
         setSavedBuildings(result.data);
@@ -35,6 +37,8 @@ function App() {
         if (viewerRef.current && viewerRef.current.viewer) {
           displaySavedBuildings(result.data);
         }
+      } else {
+        console.error('Failed to load buildings:', result.error);
       }
     } catch (error) {
       console.error('שגיאה בטעינת בניינים:', error);
@@ -254,12 +258,23 @@ function App() {
           return `#${r}${g}${b}`;
         });
         
+        console.log('Building data to save:', {
+          buildingId,
+          height,
+          floors,
+          geometryPoints: geometryPoints.length,
+          defaultFloorColors: defaultFloorColors.length
+        });
+        
         const saveResult = await buildingService.saveBuilding(
           buildingId, 
           {
             num_floors: floors.toString(),
+            no_floors: floors.toString(),
+            height: height.toString(),
             ai_command: aiCommand,
-            height: height.toString()
+            full_addres_q: `Building created at ${new Date().toLocaleString()}`,
+            bldg_type: 'Generated Building'
           },
           geometryPoints,
           aiCommand,
@@ -267,12 +282,14 @@ function App() {
           defaultFloorColors
         );
         
+        console.log('Save result:', saveResult);
+        
         if (saveResult.success) {
           console.log('Building saved successfully');
           setStatusMessage(`בניין נוצר ונשמר! גובה: ${height}מ', קומות: ${floors}`);
           
           // Reload saved buildings to include the new one
-          loadSavedBuildings();
+          await loadSavedBuildings();
         } else {
           console.error('Save failed:', saveResult.error);
           setStatusMessage(`בניין נוצר אך השמירה נכשלה: ${saveResult.error}`);
