@@ -511,6 +511,8 @@ function App() {
             setCurrentBuildingId(null);
           }}
           onSave={(message, shouldRefresh, transparency) => {
+          }
+          }
           onSave={(message, shouldRefresh, transparency, isPreview = false) => {
             setStatusMessage(message);
             if ((shouldRefresh || isPreview) && transparency !== undefined) {
