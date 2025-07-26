@@ -109,8 +109,9 @@ const CesiumViewer = forwardRef(({
                   activePointsRef.current[activePointsRef.current.length - 2], 
                   activePointsRef.current[activePointsRef.current.length - 1]
                 ],
-                width: 3,
-                material: window.Cesium.Color.CORAL
+                width: 4,
+                material: window.Cesium.Color.CYAN,
+                clampToGround: true
               }
             });
             drawingEntitiesRef.current.push(lineEntity);
