@@ -112,26 +112,98 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
             <div><label htmlFor="codeapp">codeapp</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
             <div><label htmlFor="height">Height (m)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
             <div><label htmlFor="ai_command">AI Command</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
-            <div style={{gridColumn: '1 / -1'}}>
-              <label>Floor Colors</label>
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px'}}>
-                {formData.floor_colors && formData.floor_colors.map((color, index) => (
-                  <div key={index} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                    <span style={{fontSize: '12px', color: '#bbb'}}>Floor {index + 1}:</span>
+          </div>
+          
+          {/* Floor Colors Section */}
+          <div style={{marginTop: '20px', borderTop: '1px solid #555', paddingTop: '15px'}}>
+            <h4 style={{margin: '0 0 15px 0', color: '#fff'}}>Floor Colors ({formData.floor_colors?.length || 0} floors)</h4>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
+              {formData.floor_colors && formData.floor_colors.length > 0 ? (
+                formData.floor_colors.map((color, index) => (
+                  <div key={index} style={{
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '10px',
+                    padding: '8px',
+                    backgroundColor: '#333',
+                    borderRadius: '6px',
+                    border: '1px solid #555'
+                  }}>
+                    <span style={{fontSize: '13px', color: '#bbb', minWidth: '60px'}}>
+                      Floor {index + 1}:
+                    </span>
                     <input 
                       type="color" 
-                      value={color} 
-                      onChange={(e) => {
-                        const newColors = [...formData.floor_colors];
-                        newColors[index] = e.target.value;
-                        setFormData(prev => ({...prev, floor_colors: newColors}));
+                      value={color || '#4CAF50'} 
+                      onChange={(e) => handleFloorColorChange(index, e.target.value)}
+                      style={{
+                        width: '50px', 
+                        height: '35px', 
+                        border: 'none', 
+                        borderRadius: '4px',
+                        cursor: 'pointer'
                       }}
-                      style={{width: '40px', height: '30px', border: 'none', borderRadius: '4px'}}
                     />
+                    <span style={{
+                      fontSize: '11px', 
+                      color: '#888',
+                      fontFamily: 'monospace',
+                      backgroundColor: '#222',
+                      padding: '2px 6px',
+                      borderRadius: '3px'
+                    }}>
+                      {color || '#4CAF50'}
+                    </span>
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  color: '#888',
+                  fontStyle: 'italic',
+                  padding: '20px'
+                }}>
+                  No floor colors available. Create a building first to see floor colors.
+                </div>
+              )}
             </div>
+            
+            {/* Color Palette Actions */}
+            {formData.floor_colors && formData.floor_colors.length > 0 && (
+              <div style={{marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                <button 
+                  type="button"
+                  onClick={generateGradientColors}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  🌈 Generate Gradient
+                </button>
+                <button 
+                  type="button"
+                  onClick={resetToDefaultColors}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#ff9800',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  🔄 Reset Colors
+                </button>
+              </div>
+            )}
           </div>
         </form>
       </div>
