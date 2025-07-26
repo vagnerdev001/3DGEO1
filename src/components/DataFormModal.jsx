@@ -70,7 +70,7 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         formData.floor_colors
       );
       if (result.success) {
-        onSave && onSave(result.data || formData);
+        onSave && onSave('Building data saved successfully!');
         onClose();
       } else {
         console.error('Error saving building:', result.error);
