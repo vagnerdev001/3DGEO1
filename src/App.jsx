@@ -388,7 +388,7 @@ function App() {
       floorColors = generateFloorColors(numFloors, transparency);
     }
     
-    // Create each floor as a separate polygon
+    // Create each floor as a separate polygon (no animation for saved buildings)
     for (let floor = 0; floor < numFloors; floor++) {
       const floorBottom = floor * floorHeight;
       const floorTop = (floor + 1) * floorHeight;
@@ -511,6 +511,9 @@ function App() {
         setExtrudedBuilding(building);
         setCurrentBuildingId(buildingId);
         
+        // Update status to show construction is in progress
+        setStatusMessage(`🏗️ בונה בניין עם ${floors} קומות... (${height}מ)`);
+        
         // Save building geometry and AI command to database
         console.log('Saving to database...');
         const geometryPoints = activeShapePoints.map(point => ({
@@ -555,7 +558,10 @@ function App() {
         
         if (saveResult.success) {
           console.log('Building saved successfully');
-          setStatusMessage(`בניין נוצר ונשמר! גובה: ${height}מ', קומות: ${floors}`);
+          // Wait for animation to complete before showing final message
+          setTimeout(() => {
+            setStatusMessage(`✅ בניין הושלם ונשמר! גובה: ${height}מ', קומות: ${floors}`);
+          }, floors * 1000 + 500); // Animation time + small buffer
           
           // Reload saved buildings to include the new one
           await loadSavedBuildings();
@@ -636,7 +642,7 @@ function App() {
   };
 
   // Create a multi-floor building with different colors per floor
-  const createMultiFloorBuilding = (viewer, buildingId, points, totalHeight, numFloors, transparency = 0.9) => {
+  const createMultiFloorBuilding = (viewer, buildingId, points, totalHeight, numFloors, transparency = 0.9, animated = true) => {
     console.log(`Creating building with ${numFloors} floors, total height: ${totalHeight}m`);
     
     // Create rounded corners for the building footprint
@@ -651,24 +657,86 @@ function App() {
     // Generate colors for each floor (gradient from bottom to top)
     const floorColors = generateFloorColors(numFloors, transparency);
     
-    // Create each floor as a separate polygon
-    for (let floor = 0; floor < numFloors; floor++) {
-      const floorBottom = floor * floorHeight;
-      const floorTop = (floor + 1) * floorHeight;
+    if (animated) {
+      // Animated construction - build floor by floor
+      let currentFloor = 0;
       
-      viewer.entities.add({
-        id: `${buildingId}-floor-${floor}`,
-        parent: building,
-        polygon: {
-          hierarchy: new window.Cesium.PolygonHierarchy(roundedPoints),
-          height: floorBottom,
-          extrudedHeight: floorTop,
-          material: floorColors[floor],
-          outline: true,
-          outlineColor: window.Cesium.Color.BLACK.withAlpha(0.3),
-          outlineWidth: 1
+      const buildNextFloor = () => {
+        if (currentFloor < numFloors && viewer && !viewer.isDestroyed()) {
+          const floorBottom = currentFloor * floorHeight;
+          const floorTop = (currentFloor + 1) * floorHeight;
+          
+          // Create floor with construction animation
+          const floorEntity = viewer.entities.add({
+            id: `${buildingId}-floor-${currentFloor}`,
+            parent: building,
+            polygon: {
+              hierarchy: new window.Cesium.PolygonHierarchy(roundedPoints),
+              height: floorBottom,
+              extrudedHeight: floorBottom, // Start with no height
+              material: floorColors[currentFloor],
+              outline: true,
+              outlineColor: window.Cesium.Color.BLACK.withAlpha(0.3),
+              outlineWidth: 1
+            }
+          });
+          
+          // Animate the floor rising
+          const startTime = viewer.clock.currentTime.clone();
+          const animationDuration = 0.8; // 0.8 seconds per floor
+          
+          const animateFloor = () => {
+            if (!viewer || viewer.isDestroyed() || !floorEntity.polygon) return;
+            
+            const currentTime = viewer.clock.currentTime;
+            const elapsed = window.Cesium.JulianDate.secondsDifference(currentTime, startTime);
+            const progress = Math.min(elapsed / animationDuration, 1.0);
+            
+            // Smooth easing function
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            const currentHeight = floorBottom + (floorTop - floorBottom) * easedProgress;
+            
+            floorEntity.polygon.extrudedHeight = currentHeight;
+            
+            if (progress < 1.0) {
+              requestAnimationFrame(animateFloor);
+            } else {
+              // Floor construction complete, build next floor
+              currentFloor++;
+              if (currentFloor < numFloors) {
+                setTimeout(buildNextFloor, 200); // Small delay between floors
+              } else {
+                console.log(`🏗️ Building ${buildingId} construction completed!`);
+              }
+            }
+          };
+          
+          requestAnimationFrame(animateFloor);
         }
-      });
+      };
+      
+      // Start building the first floor
+      buildNextFloor();
+    } else {
+      // Static construction - create all floors immediately
+      for (let floor = 0; floor < numFloors; floor++) {
+        const floorBottom = floor * floorHeight;
+        const floorTop = (floor + 1) * floorHeight;
+        
+        viewer.entities.add({
+          id: `${buildingId}-floor-${floor}`,
+          parent: building,
+          polygon: {
+            hierarchy: new window.Cesium.PolygonHierarchy(roundedPoints),
+            height: floorBottom,
+            extrudedHeight: floorTop,
+            material: floorColors[floor],
+            outline: true,
+            outlineColor: window.Cesium.Color.BLACK.withAlpha(0.3),
+            outlineWidth: 1
+          }
+        });
+      }
     }
     
     return building;
