@@ -197,6 +197,10 @@ const CesiumViewer = forwardRef(({
     const terminateShape = () => {
       console.log('Terminating shape with points:', activePointsRef.current.length);
       
+      // CRITICAL: Store the points before any cleanup
+      const completedPoints = [...activePointsRef.current];
+      console.log('Storing completed points:', completedPoints);
+      
       // Create a preview polygon
       if (activePointsRef.current.length >= 3 && viewerRef.current) {
         // Clear only the drawing aids (points and lines), keep the polygon
@@ -226,14 +230,18 @@ const CesiumViewer = forwardRef(({
       const message = `Footprint complete with ${activePointsRef.current.length} points. Enter AI command and click "Create Building".`;
       console.log('Shape terminated, updating parent:', message);
       
-      // Keep the points for building creation - THIS IS KEY!
+      // CRITICAL: Pass the stored points to parent, not the current ref
       onDrawingStateChange(
         false, 
-        [...activePointsRef.current], 
+        completedPoints, 
         null, 
         null, 
         message
       );
+      
+      // Keep the points in the ref for building creation
+      activePointsRef.current = completedPoints;
+      console.log('Points preserved in ref:', activePointsRef.current.length);
     };
 
     return () => {

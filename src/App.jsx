@@ -58,12 +58,17 @@ function App() {
       aiCommand, 
       canCreate: activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0 
     });
+    
+    console.log('Active shape points:', activeShapePoints);
+    console.log('Points available for building creation:', activeShapePoints.length > 0);
 
     if (activeShapePoints.length < 3) {
+      console.error('Not enough points for building creation');
       alert('Please draw a valid building footprint first.');
       return;
     }
     if (!aiCommand.trim()) {
+      console.error('No AI command provided');
       alert('Please enter a command for the AI.');
       return;
     }
@@ -192,6 +197,7 @@ function App() {
       aiCommand: aiCommand.length,
       canCreate: activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0
     });
+    console.log('Actual activeShapePoints:', activeShapePoints);
   }, [isDrawing, activeShapePoints, aiCommand]);
 
   return (
