@@ -60,37 +60,59 @@ function App() {
     
     objects.forEach(obj => {
       if (obj.position && obj.object_models) {
-        const position = window.Cesium.Cartesian3.fromDegrees(
-          obj.position.longitude,
-          obj.position.latitude,
-          obj.position.height || 0
-        );
+        // Try to load 3D model first, fallback to box if it fails
+        if (obj.object_models.file_url && viewerRef.current.add3DModel) {
+          const modelData = {
+            file_url: obj.object_models.file_url,
+            longitude: obj.position.longitude,
+            latitude: obj.position.latitude,
+            height: obj.position.height || 0,
+            scale: obj.scale || { x: 1, y: 1, z: 1 },
+            rotation: obj.rotation || { x: 0, y: 0, z: 0 }
+          };
+          
+          try {
+            viewerRef.current.add3DModel(modelData);
+          } catch (error) {
+            console.warn('Failed to load 3D model, using fallback box:', error);
+            createFallbackBox();
+          }
+        } else {
+          createFallbackBox();
+        }
         
-        // Create a simple box representation for now
-        viewer.entities.add({
-          id: `placed-object-${obj.id}`,
-          position: position,
-          box: {
-            dimensions: new window.Cesium.Cartesian3(
-              (obj.scale?.x || 1) * 5,
-              (obj.scale?.y || 1) * 5,
-              (obj.scale?.z || 1) * 5
-            ),
-            material: window.Cesium.Color.ORANGE.withAlpha(0.7),
-            outline: true,
-            outlineColor: window.Cesium.Color.BLACK
-          },
-          label: {
-            text: obj.name,
-            font: '12pt sans-serif',
-            fillColor: window.Cesium.Color.WHITE,
-            outlineColor: window.Cesium.Color.BLACK,
-            outlineWidth: 2,
-            style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-            pixelOffset: new window.Cesium.Cartesian2(0, -50)
-          },
-          isPlacedObject: true
-        });
+        function createFallbackBox() {
+          const position = window.Cesium.Cartesian3.fromDegrees(
+            obj.position.longitude,
+            obj.position.latitude,
+            obj.position.height || 0
+          );
+          
+          viewer.entities.add({
+            id: `placed-object-${obj.id}`,
+            position: position,
+            box: {
+              dimensions: new window.Cesium.Cartesian3(
+                (obj.scale?.x || 1) * 5,
+                (obj.scale?.y || 1) * 5,
+                (obj.scale?.z || 1) * 5
+              ),
+              material: window.Cesium.Color.ORANGE.withAlpha(0.7),
+              outline: true,
+              outlineColor: window.Cesium.Color.BLACK
+            },
+            label: {
+              text: obj.name,
+              font: '12pt sans-serif',
+              fillColor: window.Cesium.Color.WHITE,
+              outlineColor: window.Cesium.Color.BLACK,
+              outlineWidth: 2,
+              style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+              pixelOffset: new window.Cesium.Cartesian2(0, -50)
+            },
+            isPlacedObject: true
+          });
+        }
       }
     });
   };
