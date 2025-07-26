@@ -12,9 +12,33 @@ export const buildingService = {
     try {
       console.log('Saving building:', { buildingId, data, geometryPoints, aiCommand, height });
       
+      // Only include fields that exist in the database schema
+      const validFields = {
+        wkt: data.wkt || '',
+        full_addres_q: data.full_addres_q || '',
+        street_cod: data.street_cod || '',
+        bldg_num: data.bldg_num || '',
+        bldg_type: data.bldg_type || '',
+        num_floors: data.num_floors || '',
+        street_c_1: data.street_c_1 || '',
+        bldg_num_2: data.bldg_num_2 || '',
+        street_is_tama: data.street_is_tama || '',
+        no_floors: data.no_floors || '',
+        no_apt: data.no_apt || '',
+        st_code: data.st_code || '',
+        street_1: data.street_1 || '',
+        color: data.color || '',
+        מיון_2: data.מיון_2 || '',
+        masadcolor2: data.masadcolor2 || '',
+        color_sofi: data.color_sofi || '',
+        full_addresse: data.full_addresse || '',
+        mi_address: data.mi_address || '',
+        codeapp: data.codeapp || ''
+      };
+      
       const buildingData = {
         id: buildingId,
-        ...data,
+        ...validFields,
         geometry_points: geometryPoints,
         ai_command: aiCommand,
         height: height,
