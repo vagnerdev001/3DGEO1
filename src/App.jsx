@@ -23,11 +23,115 @@ function App() {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const viewerRef = useRef(null);
   const [savedBuildings, setSavedBuildings] = useState([]);
+  const [isPlacingObject, setIsPlacingObject] = useState(false);
+  const [selectedObjectPosition, setSelectedObjectPosition] = useState(null);
+  const [placedObjects, setPlacedObjects] = useState([]);
 
   // Load saved buildings when component mounts
   useEffect(() => {
     loadSavedBuildings();
+    loadPlacedObjects();
   }, []);
+
+  const loadPlacedObjects = async () => {
+    try {
+      const { objectsService } = await import('./services/objectsService');
+      const result = await objectsService.getPlacedObjects();
+      if (result.success && result.data) {
+        console.log('טוען אובייקטים ממוקמים:', result.data.length);
+        setPlacedObjects(result.data);
+        displayPlacedObjects(result.data);
+      }
+    } catch (error) {
+      console.error('שגיאה בטעינת אובייקטים:', error);
+    }
+  };
+
+  const displayPlacedObjects = (objects) => {
+    if (!viewerRef.current || !viewerRef.current.viewer) return;
+    
+    const viewer = viewerRef.current.viewer;
+    
+    objects.forEach(obj => {
+      if (obj.position && obj.object_models) {
+        const position = window.Cesium.Cartesian3.fromDegrees(
+          obj.position.longitude,
+          obj.position.latitude,
+          obj.position.height || 0
+        );
+        
+        // Create a simple box representation for now
+        viewer.entities.add({
+          id: `placed-object-${obj.id}`,
+          position: position,
+          box: {
+            dimensions: new window.Cesium.Cartesian3(
+              (obj.scale?.x || 1) * 5,
+              (obj.scale?.y || 1) * 5,
+              (obj.scale?.z || 1) * 5
+            ),
+            material: window.Cesium.Color.ORANGE.withAlpha(0.7),
+            outline: true,
+            outlineColor: window.Cesium.Color.BLACK
+          },
+          label: {
+            text: obj.name,
+            font: '12pt sans-serif',
+            fillColor: window.Cesium.Color.WHITE,
+            outlineColor: window.Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+            pixelOffset: new window.Cesium.Cartesian2(0, -50)
+          },
+          isPlacedObject: true
+        });
+      }
+    });
+  };
+
+  const handleStartObjectPlacing = () => {
+    console.log('🎯 Starting object placement mode');
+    setIsPlacingObject(true);
+    setSelectedObjectPosition(null);
+    setStatusMessage('לחץ על המפה לבחירת מיקום לאובייקט');
+  };
+
+  const handleCancelObjectPlacing = () => {
+    console.log('❌ Canceling object placement');
+    setIsPlacingObject(false);
+    setSelectedObjectPosition(null);
+    setStatusMessage('מיקום אובייקט בוטל');
+  };
+
+  const handleObjectPlace = async (objectData, modelData) => {
+    console.log('📍 Placing object:', objectData);
+    
+    try {
+      const { objectsService } = await import('./services/objectsService');
+      const result = await objectsService.placeObject(objectData);
+      
+      if (result.success) {
+        console.log('✅ Object placed successfully');
+        setStatusMessage(`אובייקט "${objectData.name}" הוצב בהצלחה!`);
+        
+        // Add to local state
+        setPlacedObjects(prev => [...prev, result.data]);
+        
+        // Display on map
+        displayPlacedObjects([result.data]);
+        
+        // Reset placement state
+        setIsPlacingObject(false);
+        setSelectedObjectPosition(null);
+      } else {
+        console.error('Failed to place object:', result.error);
+        setStatusMessage(`שגיאה במיקום אובייקט: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error placing object:', error);
+      setStatusMessage(`שגיאה במיקום אובייקט: ${error.message}`);
+    }
+  };
 
   const loadSavedBuildings = async () => {
     try {
@@ -622,6 +726,8 @@ function App() {
         currentLayer={currentLayer}
         onDrawingStateChange={handleDrawingStateChange}
         onBuildingClick={handleBuildingClick}
+        isPlacingObject={isPlacingObject}
+        onObjectPositionSelect={setSelectedObjectPosition}
       />
       <AIControls
         isDrawing={isDrawing}
@@ -635,6 +741,13 @@ function App() {
       <LayerSwitcher
         currentLayer={currentLayer}
         onLayerChange={setCurrentLayer}
+      />
+      <ObjectPlacer
+        isPlacing={isPlacingObject}
+        onStartPlacing={handleStartObjectPlacing}
+        onCancelPlacing={handleCancelObjectPlacing}
+        onObjectPlace={handleObjectPlace}
+        selectedPosition={selectedObjectPosition}
       />
       {showDataForm && (
         <DataFormModal

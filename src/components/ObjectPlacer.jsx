@@ -85,8 +85,12 @@ const ObjectPlacer = ({
       model_id: selectedModel,
       name: objectName || selectedModelData.name_he,
       position: selectedPosition,
-      scale: selectedModelData.scale || { x: 1, y: 1, z: 1 },
-      rotation: selectedModelData.rotation || { x: 0, y: 0, z: 0 },
+      scale: typeof selectedModelData.scale === 'string' ? 
+        JSON.parse(selectedModelData.scale) : 
+        (selectedModelData.scale || { x: 1, y: 1, z: 1 }),
+      rotation: typeof selectedModelData.rotation === 'string' ? 
+        JSON.parse(selectedModelData.rotation) : 
+        (selectedModelData.rotation || { x: 0, y: 0, z: 0 }),
       properties: {}
     };
 

@@ -4,8 +4,10 @@ const CesiumViewer = forwardRef(({
   isDrawing, 
   activeShapePoints, 
   currentLayer,
+  isPlacingObject,
   onDrawingStateChange, 
-  onBuildingClick 
+  onBuildingClick,
+  onObjectPositionSelect
 }, ref) => {
   const containerRef = useRef(null);
   const viewerRef = useRef(null);
@@ -226,7 +228,19 @@ const CesiumViewer = forwardRef(({
     handler.setInputAction((event) => {
       console.log('Left click - isDrawing:', isDrawingRef.current);
       
-      if (isDrawingRef.current) {
+      if (isPlacingObject) {
+        // Handle object placement
+        const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
+        if (window.Cesium.defined(earthPosition)) {
+          const cartographic = window.Cesium.Cartographic.fromCartesian(earthPosition);
+          const longitude = window.Cesium.Math.toDegrees(cartographic.longitude);
+          const latitude = window.Cesium.Math.toDegrees(cartographic.latitude);
+          const height = cartographic.height;
+          
+          console.log('📍 Object position selected:', { longitude, latitude, height });
+          onObjectPositionSelect({ longitude, latitude, height });
+        }
+      } else if (isDrawingRef.current) {
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
           console.log('Adding point at:', earthPosition);
