@@ -100,34 +100,40 @@ const TestPlanData: React.FC = () => {
           plan_name: 'תוכנית בסיס - La Guardia',
           plan_type: 'baseline',
           status: 'approved',
-          description: 'תוכנית הבסיס המקורית עם 4 בניינים בגובה 8 קומות'
+          description: 'תוכנית הבסיס המקורית עם 4 בניינים בגובה 8 קומות',
+          version: 1
         },
         {
           project_id: projectId,
           plan_name: 'תוכנית חלופית A - גובה מוגבר',
           plan_type: 'alternative',
           status: 'review',
-          description: 'תוכנית חלופית עם 3 בניינים בגובה 12 קומות'
+          description: 'תוכנית חלופית עם 3 בניינים בגובה 12 קומות',
+          version: 1
         },
         {
           project_id: projectId,
           plan_name: 'תוכנית חלופית B - צפיפות נמוכה',
           plan_type: 'alternative',
           status: 'draft',
-          description: 'תוכנית עם 6 בניינים בגובה 6 קומות ושטחים ירוקים מוגדלים'
+          description: 'תוכנית עם 6 בניינים בגובה 6 קומות ושטחים ירוקים מוגדלים',
+          version: 1
         },
         {
           project_id: projectId,
           plan_name: 'תוכנית מוצעת - היברידית',
           plan_type: 'proposed',
           status: 'review',
-          description: 'שילוב של התוכניות החלופיות עם איזון בין גובה וצפיפות'
+          description: 'שילוב של התוכניות החלופיות עם איזון בין גובה וצפיפות',
+          version: 1
         }
       ];
 
       const { data: createdPlans, error: plansError } = await supabase
         .from('building_plans')
-        .insert(samplePlans)
+        .upsert(samplePlans, { 
+          onConflict: 'project_id,plan_name,version' 
+        })
         .select();
 
       if (plansError) throw plansError;
