@@ -233,14 +233,6 @@ const PublicAllocationDashboard: React.FC = () => {
   };
 
   const createRevenueProjections = async (planId: string, planName: string) => {
-    // Ensure revenue summary table exists before inserting data
-    try {
-      await supabase.rpc('create_revenue_summary_table');
-    } catch (error) {
-      console.warn('Could not create revenue summary table:', error);
-      // Continue anyway - table might already exist
-    }
-
     const revenueData = [];
     const sources = [
       { name: 'ארנונה מסחרית', base: 8000000, type: 'הכנסה' },
@@ -269,16 +261,12 @@ const PublicAllocationDashboard: React.FC = () => {
     }
 
     // Insert revenue projections data
-    try {
-      const { error } = await supabase
-        .from('revenue_summary_10_year')
-        .upsert(revenueData, { onConflict: 'plan_name,revenue_source,projection_year' });
-      
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      console.warn('Could not create revenue projections:', error);
+    const { error } = await supabase
+      .from('revenue_summary_10_year')
+      .upsert(revenueData, { onConflict: 'plan_name,revenue_source,projection_year' });
+    
+    if (error) {
+      throw error;
     }
   };
 
