@@ -6,13 +6,15 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   color: #fff;
   min-width: 280px;
-  max-width: 350px;
+  max-width: 400px;
+  max-height: 600px;
   z-index: 1000;
   direction: rtl;
   text-align: right;
   backdrop-filter: blur(4px);
   transform: translate(-50%, -100%);
   margin-top: -10px;
+  overflow-y: auto;
 }
 
 .popup-header {
@@ -54,6 +56,105 @@
 
 .popup-content {
   padding: 15px;
+}
+
+.plans-carousel {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid #555;
+}
+
+.plans-carousel h5 {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  color: #4CAF50;
+  text-align: center;
+  font-weight: bold;
+}
+
+.plans-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.plan-tab {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #666;
+  border-radius: 20px;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.3s;
+  min-width: 70px;
+  text-align: center;
+}
+
+.plan-tab:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #4CAF50;
+  color: #fff;
+}
+
+.plan-tab.active {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-color: #4CAF50;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.plan-content {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 80px;
+}
+
+.plan-preview {
+  text-align: center;
+  color: #bbb;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.plan-preview .plan-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.plan-preview .plan-description {
+  font-size: 11px;
+  color: #888;
+  margin-top: 5px;
+}
+
+.coming-soon {
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+  font-size: 10px;
+}
+
+.metadata-section {
+  border-top: 1px solid #555;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.metadata-section h5 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #4CAF50;
+  text-align: center;
 }
 
 .popup-row {
