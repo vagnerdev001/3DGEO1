@@ -17,12 +17,14 @@ const CesiumViewer = forwardRef(({
   useImperativeHandle(ref, () => ({
     viewer: viewerRef.current,
     startDrawing: () => {
+      console.log('Starting drawing...');
       isDrawingRef.current = true;
       activePointsRef.current = [];
       drawingEntitiesRef.current = [];
       onDrawingStateChange(true, [], null, null, "Click to add points. Double-click to finish.");
     },
     cancelDrawing: () => {
+      console.log('Canceling drawing...');
       isDrawingRef.current = false;
       // Clear all drawing entities
       if (viewerRef.current) {
@@ -35,6 +37,7 @@ const CesiumViewer = forwardRef(({
       onDrawingStateChange(false, [], null, null, "Drawing cancelled. Click 'Start Drawing' to begin.");
     },
     clearDrawing: () => {
+      console.log('Clearing drawing...');
       // Clear all drawing entities including preview polygon
       if (viewerRef.current) {
         drawingEntitiesRef.current.forEach(entity => {
@@ -49,6 +52,8 @@ const CesiumViewer = forwardRef(({
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    console.log('Initializing Cesium viewer...');
 
     // Initialize Cesium
     window.Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4MWJmN2FlOC0wZjQ2LTRlMTUtYTExYS04YzMyYWVjNmUyNzMiLCJpZCI6MjI1NDgxLCJpYXQiOjE3NDA4MzE1Mzd9.o7sSlzZ3eyDevQejh5Q3zxlVpHfM4vX-49UTlwoCJkw';
@@ -66,6 +71,7 @@ const CesiumViewer = forwardRef(({
     });
 
     viewerRef.current = viewer;
+    console.log('Cesium viewer created:', viewer);
 
     // Check if viewer was successfully created
     if (!viewer || !viewer.scene) {
@@ -105,6 +111,8 @@ const CesiumViewer = forwardRef(({
             pitch: window.Cesium.Math.toRadians(-45.0) 
           }
         });
+        
+        console.log('Scene initialized successfully');
       } catch (error) {
         console.error("Failed to load scene assets: ", error);
       }
@@ -117,21 +125,28 @@ const CesiumViewer = forwardRef(({
     handlerRef.current = handler;
 
     handler.setInputAction((event) => {
+      console.log('Left click detected, isDrawing:', isDrawingRef.current);
+      
       if (isDrawingRef.current) {
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
+          console.log('Adding point:', earthPosition);
           activePointsRef.current.push(earthPosition);
           
           // Add visual point
           const pointEntity = viewer.entities.add({
             position: earthPosition,
             point: {
-              color: window.Cesium.Color.RED,
-              pixelSize: 8,
-              heightReference: window.Cesium.HeightReference.NONE
+              color: window.Cesium.Color.YELLOW,
+              pixelSize: 12,
+              outlineColor: window.Cesium.Color.BLACK,
+              outlineWidth: 2,
+              heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
+              disableDepthTestDistance: Number.POSITIVE_INFINITY
             }
           });
           drawingEntitiesRef.current.push(pointEntity);
+          console.log('Point entity added:', pointEntity);
 
           // Add line if we have more than one point
           if (activePointsRef.current.length > 1) {
@@ -141,20 +156,24 @@ const CesiumViewer = forwardRef(({
                   activePointsRef.current[activePointsRef.current.length - 2], 
                   activePointsRef.current[activePointsRef.current.length - 1]
                 ],
-                width: 3,
-                material: window.Cesium.Color.CORAL
+                width: 4,
+                material: window.Cesium.Color.CYAN,
+                clampToGround: true
               }
             });
             drawingEntitiesRef.current.push(lineEntity);
+            console.log('Line entity added:', lineEntity);
           }
           
           // Update parent component with new points
+          const message = `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Double-click to finish.' : 'Continue adding points.'}`;
+          console.log('Updating parent state:', message);
           onDrawingStateChange(
             true, 
             [...activePointsRef.current], 
             null, 
             null, 
-            `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Double-click to finish.' : 'Continue adding points.'}`
+            message
           );
         }
       } else {
@@ -168,12 +187,16 @@ const CesiumViewer = forwardRef(({
     }, window.Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
     handler.setInputAction((event) => {
+      console.log('Double click detected, isDrawing:', isDrawingRef.current, 'points:', activePointsRef.current.length);
+      
       if (isDrawingRef.current && activePointsRef.current.length >= 3) {
         terminateShape();
       }
     }, window.Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
     const terminateShape = () => {
+      console.log('Terminating shape with points:', activePointsRef.current.length);
+      
       // Create a preview polygon
       if (activePointsRef.current.length >= 3 && viewerRef.current) {
         // Clear only the drawing aids (points and lines), keep the polygon
@@ -196,19 +219,25 @@ const CesiumViewer = forwardRef(({
           }
         });
         drawingEntitiesRef.current.push(previewPolygon);
+        console.log('Preview polygon created:', previewPolygon);
       }
+      
       isDrawingRef.current = false;
-      // Keep the points for building creation
+      const message = `Footprint complete with ${activePointsRef.current.length} points. Enter AI command and click "Create Building".`;
+      console.log('Shape terminated, updating parent:', message);
+      
+      // Keep the points for building creation - THIS IS KEY!
       onDrawingStateChange(
         false, 
         [...activePointsRef.current], 
         null, 
         null, 
-        `Footprint complete with ${activePointsRef.current.length} points. Enter AI command and click "Create Building".`
+        message
       );
     };
 
     return () => {
+      console.log('Cleaning up Cesium viewer...');
       if (handlerRef.current) {
         handlerRef.current.destroy();
         handlerRef.current = null;
@@ -249,6 +278,7 @@ const CesiumViewer = forwardRef(({
 
   // Handle drawing state changes
   useEffect(() => {
+    console.log('Drawing state changed from parent:', isDrawing);
     // Update internal drawing state
     isDrawingRef.current = isDrawing;
   }, [isDrawing]);

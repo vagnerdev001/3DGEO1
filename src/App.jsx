@@ -18,6 +18,7 @@ function App() {
   const viewerRef = useRef(null);
 
   const handleDrawingStateChange = (drawing, points, building, buildingId, message) => {
+    console.log('Drawing state change:', { drawing, pointsCount: points.length, message });
     setIsDrawing(drawing);
     setActiveShapePoints(points);
     setExtrudedBuilding(building);
@@ -26,29 +27,43 @@ function App() {
   };
 
   const handleStartDrawing = () => {
+    console.log('Start drawing button clicked, current state:', { isDrawing, pointsCount: activeShapePoints.length });
+    
     if (viewerRef.current) {
       if (isDrawing) {
         // Cancel drawing - clear everything
+        console.log('Canceling drawing...');
         viewerRef.current.cancelDrawing();
         setActiveShapePoints([]);
+        setAiCommand('');
       } else {
         // Start drawing
+        console.log('Starting new drawing...');
         viewerRef.current.startDrawing();
+        setActiveShapePoints([]);
+        setAiCommand('');
       }
     }
   };
 
   const handleBuildingClick = (buildingEntity) => {
+    console.log('Building clicked:', buildingEntity.id);
     setCurrentBuildingId(buildingEntity.id);
     setShowDataForm(true);
   };
 
   const handleCreateBuilding = async () => {
+    console.log('Create building clicked:', { 
+      pointsCount: activeShapePoints.length, 
+      aiCommand, 
+      canCreate: activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0 
+    });
+
     if (activeShapePoints.length < 3) {
       alert('Please draw a valid building footprint first.');
       return;
     }
-    if (!aiCommand) {
+    if (!aiCommand.trim()) {
       alert('Please enter a command for the AI.');
       return;
     }
@@ -56,15 +71,20 @@ function App() {
     setStatusMessage('AI is thinking...');
 
     try {
+      console.log('Calling AI with command:', aiCommand);
       const height = await getExtrusionHeightFromAI(aiCommand);
-      if (height !== null && viewerRef.current) {
-        const viewer = viewerRef.current.viewer || viewerRef.current;
+      console.log('AI returned height:', height);
+      
+      if (height !== null && viewerRef.current && viewerRef.current.viewer) {
+        const viewer = viewerRef.current.viewer;
         
+        // Remove existing building if any
         if (extrudedBuilding) {
           viewer.entities.remove(extrudedBuilding);
         }
         
         const buildingId = `building-${new Date().getTime()}`;
+        console.log('Creating building with ID:', buildingId);
 
         const building = viewer.entities.add({
           id: buildingId,
@@ -78,43 +98,49 @@ function App() {
           }
         });
 
+        console.log('Building entity created:', building);
         setExtrudedBuilding(building);
         setCurrentBuildingId(buildingId);
-        setStatusMessage(`Building created with height: ${height}m.`);
         
         // Save building geometry and AI command to database
+        console.log('Saving to database...');
+        const geometryPoints = activeShapePoints.map(point => ({
+          longitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).longitude),
+          latitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).latitude),
+          height: window.Cesium.Cartographic.fromCartesian(point).height
+        }));
+        
         const saveResult = await buildingService.saveBuilding(
           buildingId, 
           {
             height: height,
             ai_command: aiCommand
           },
-          activeShapePoints.map(point => ({
-            longitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).longitude),
-            latitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).latitude),
-            height: window.Cesium.Cartographic.fromCartesian(point).height
-          })),
+          geometryPoints,
           aiCommand,
           height
         );
         
         if (saveResult.success) {
+          console.log('Building saved successfully');
           setStatusMessage(`Building created and saved! Height: ${height}m`);
         } else {
+          console.error('Save failed:', saveResult.error);
           setStatusMessage(`Building created but save failed: ${saveResult.error}`);
         }
         
-        setShowDataForm(true);
-        
-        // Clear drawing state
+        // Clear drawing state and show data form
         if (viewerRef.current && viewerRef.current.clearDrawing) {
           viewerRef.current.clearDrawing();
         }
         setActiveShapePoints([]);
         setAiCommand('');
         setIsDrawing(false);
+        setShowDataForm(true);
+        
       } else {
-        setStatusMessage('AI could not determine a height.');
+        console.error('Failed to create building - no height or viewer');
+        setStatusMessage('AI could not determine a height or viewer not available.');
       }
     } catch (error) {
       console.error('Error calling Gemini API:', error);
@@ -123,30 +149,50 @@ function App() {
   };
 
   const getExtrusionHeightFromAI = async (userCommand) => {
+    console.log('Calling Gemini API with command:', userCommand);
     const geminiApiKey = 'AIzaSyD7he1t-eLRUPOjUvbSfImIBLhKelaoQbw';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
     const prompt = `You are an assistant for a 3D mapping application. The user has provided an instruction to create a building. Your task is to determine the final height of the building in meters. Assume a standard floor is 3.5 meters high if the user specifies floors. Respond with ONLY the numerical value for the total height in meters. For example, if the user says 'make it 10 stories tall', you should respond with '35'. If the user says 'extrude to 100 feet', you should respond with '30.48'. If the user says 'build it 50 meters high', you should respond with '50'. User instruction: '${userCommand}'`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) {
-      console.error("API Error Response:", await response.text());
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API Error Response:", errorText);
+        return null;
+      }
+      
+      const result = await response.json();
+      console.log('Gemini API response:', result);
+      
+      if (result.candidates && result.candidates[0]?.content?.parts[0]) {
+        const text = result.candidates[0].content.parts[0].text;
+        const height = parseFloat(text.trim());
+        console.log('Parsed height:', height);
+        return isNaN(height) ? null : height;
+      }
+      return null;
+    } catch (error) {
+      console.error('Fetch error:', error);
       return null;
     }
-    
-    const result = await response.json();
-    if (result.candidates && result.candidates[0]?.content?.parts[0]) {
-      const text = result.candidates[0].content.parts[0].text;
-      const height = parseFloat(text.trim());
-      return isNaN(height) ? null : height;
-    }
-    return null;
   };
+
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('App state:', { 
+      isDrawing, 
+      pointsCount: activeShapePoints.length, 
+      aiCommand: aiCommand.length,
+      canCreate: activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0
+    });
+  }, [isDrawing, activeShapePoints, aiCommand]);
 
   return (
     <div className="app">
