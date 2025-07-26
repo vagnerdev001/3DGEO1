@@ -87,8 +87,15 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
   };
 
   const generateGradientColors = () => {
-    const numFloors = formData.floor_colors?.length || 0;
-    if (numFloors === 0) return;
+    // Get number of floors from the building data
+    const numFloorsFromData = parseInt(formData.num_floors) || parseInt(formData.no_floors) || 0;
+    const currentFloorColors = formData.floor_colors || [];
+    const numFloors = Math.max(numFloorsFromData, currentFloorColors.length, 1);
+    
+    if (numFloors === 0) {
+      console.log('No floors detected for gradient generation');
+      return;
+    }
     
     const newColors = [];
     for (let i = 0; i < numFloors; i++) {
@@ -112,8 +119,15 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
   };
 
   const resetToDefaultColors = () => {
-    const numFloors = formData.floor_colors?.length || 0;
-    if (numFloors === 0) return;
+    // Get number of floors from the building data
+    const numFloorsFromData = parseInt(formData.num_floors) || parseInt(formData.no_floors) || 0;
+    const currentFloorColors = formData.floor_colors || [];
+    const numFloors = Math.max(numFloorsFromData, currentFloorColors.length, 1);
+    
+    if (numFloors === 0) {
+      console.log('No floors detected for color reset');
+      return;
+    }
     
     const defaultColors = Array(numFloors).fill('#4CAF50');
     setFormData(prev => ({
@@ -214,7 +228,7 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
             <div><label htmlFor="full_addresse">כתובת מלאה (נוסף)</label><input type="text" id="full_addresse" name="full_addresse" value={formData.full_addresse} onChange={handleInputChange} /></div>
             
             <div style={{gridColumn: '1 / -1'}}>
-              <label>צבעי קומות ({formData.floor_colors?.length || 0} קומות)</label>
+              <label>צבעי קומות ({Math.max(parseInt(formData.num_floors) || 0, parseInt(formData.no_floors) || 0, formData.floor_colors?.length || 0)} קומות)</label>
               <div style={{display: 'flex', gap: '10px', marginBottom: '15px', justifyContent: 'center'}}>
                 <button 
                   type="button" 
