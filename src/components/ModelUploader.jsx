@@ -62,14 +62,6 @@ const ModelUploader = ({ onClose }) => {
       return false;
     }
 
-    const allowedModelTypes = [
-      'model/gltf-binary',
-      'model/gltf+json', 
-      'application/octet-stream',
-      'model/obj',
-      'application/json'
-    ];
-
     const modelExtension = modelFile.name.toLowerCase().split('.').pop();
     const allowedExtensions = ['glb', 'gltf', 'obj', 'fbx', '3ds', 'dae'];
     
