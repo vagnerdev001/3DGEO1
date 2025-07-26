@@ -1,27 +1,28 @@
 .object-placer {
   position: absolute;
   top: 20px;
-  left: 380px;
-  background: rgba(38, 38, 38, 0.9);
+  left: 20px;
+  background: rgba(38, 38, 38, 0.95);
   padding: 15px;
   border-radius: 8px;
   border: 1px solid #444;
   color: #fff;
   min-width: 280px;
   max-width: 320px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   z-index: 10;
   direction: rtl;
   text-align: right;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
 }
 
-.object-placer h3 {
-  margin-top: 0;
-  font-size: 18px;
-  border-bottom: 1px solid #555;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
-  text-align: center;
+.object-placer.minimized {
+  padding: 10px 15px;
+}
+
+.object-placer.minimized .panel-content {
+  display: none;
 }
 
 .form-group {

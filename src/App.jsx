@@ -28,6 +28,11 @@ function App() {
   const [selectedObjectPosition, setSelectedObjectPosition] = useState(null);
   const [placedObjects, setPlacedObjects] = useState([]);
 
+  const [showAIControls, setShowAIControls] = useState(true);
+  const [showObjectPlacer, setShowObjectPlacer] = useState(true);
+  const [showLayerSwitcher, setShowLayerSwitcher] = useState(true);
+  const [showAdminPanel, setShowAdminPanel] = useState(true);
+
   // Load saved buildings when component mounts
   useEffect(() => {
     loadSavedBuildings();
@@ -843,6 +848,8 @@ function App() {
         onObjectPositionSelect={handleObjectPositionSelect}
       />
       <AIControls
+        show={showAIControls}
+        onToggle={setShowAIControls}
         isDrawing={isDrawing}
         statusMessage={statusMessage}
         aiCommand={aiCommand}
@@ -852,10 +859,14 @@ function App() {
         canCreate={activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0}
       />
       <LayerSwitcher
+        show={showLayerSwitcher}
+        onToggle={setShowLayerSwitcher}
         currentLayer={currentLayer}
         onLayerChange={setCurrentLayer}
       />
       <ObjectPlacer
+        show={showObjectPlacer}
+        onToggle={setShowObjectPlacer}
         isPlacing={isPlacingObject}
         onStartPlacing={handleStartObjectPlacing}
         onCancelPlacing={handleCancelObjectPlacing}
@@ -895,7 +906,104 @@ function App() {
           }}
         />
       )}
-      <AdminPanel />
+      <AdminPanel 
+        show={showAdminPanel}
+        onToggle={setShowAdminPanel}
+      />
+      
+      {/* Panel Toggle Menu */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '10px',
+        transform: 'translateY(-50%)',
+        background: 'rgba(38, 38, 38, 0.95)',
+        borderRadius: '8px',
+        padding: '10px',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid #444',
+        zIndex: 15
+      }}>
+        <div style={{ color: '#fff', fontSize: '12px', marginBottom: '8px', textAlign: 'center' }}>
+          חלונות
+        </div>
+        {!showAIControls && (
+          <button 
+            onClick={() => setShowAIControls(true)}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '6px',
+              margin: '2px 0',
+              background: 'rgba(76, 175, 80, 0.8)',
+              border: 'none',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '11px',
+              cursor: 'pointer'
+            }}
+          >
+            🏗️ יוצר בניינים
+          </button>
+        )}
+        {!showObjectPlacer && (
+          <button 
+            onClick={() => setShowObjectPlacer(true)}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '6px',
+              margin: '2px 0',
+              background: 'rgba(33, 150, 243, 0.8)',
+              border: 'none',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '11px',
+              cursor: 'pointer'
+            }}
+          >
+            🏗️ מציב אובייקטים
+          </button>
+        )}
+        {!showLayerSwitcher && (
+          <button 
+            onClick={() => setShowLayerSwitcher(true)}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '6px',
+              margin: '2px 0',
+              background: 'rgba(156, 39, 176, 0.8)',
+              border: 'none',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '11px',
+              cursor: 'pointer'
+            }}
+          >
+            🗺️ שכבות מפה
+          </button>
+        )}
+        {!showAdminPanel && (
+          <button 
+            onClick={() => setShowAdminPanel(true)}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '6px',
+              margin: '2px 0',
+              background: 'rgba(255, 107, 107, 0.8)',
+              border: 'none',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '11px',
+              cursor: 'pointer'
+            }}
+          >
+            🔧 ניהול מערכת
+          </button>
+        )}
+      </div>
     </div>
   );
 }

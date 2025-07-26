@@ -15,6 +15,10 @@ const ObjectPlacer = ({
   const [selectedModel, setSelectedModel] = useState('');
   const [objectName, setObjectName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!isVisible) return null;
 
   useEffect(() => {
     loadCategories();
@@ -104,86 +108,106 @@ const ObjectPlacer = ({
   };
 
   return (
-    <div className="object-placer" id="object-placer">
-      <h3>🏗️ מציב אובייקטים</h3>
-      
-      <div className="form-group">
-        <label>קטגוריה:</label>
-        <select 
-          value={selectedCategory} 
-          name="category_id"
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          disabled={loading}
-        >
-          <option value="">בחר קטגוריה...</option>
-          {categories.map(category => (
-            <option key={category.id} value={category.id}>
-              {category.icon} {category.name_he}
-            </option>
-          ))}
-        </select>
+    <div className={`object-placer ${isMinimized ? 'minimized' : ''}`} id="object-placer">
+      <div className="panel-header">
+        <h3>🏗️ מציב אובייקטים</h3>
+        <div className="panel-controls">
+          <button 
+            className="panel-btn minimize-btn"
+            onClick={() => setIsMinimized(!isMinimized)}
+            title={isMinimized ? 'הרחב' : 'הקטן'}
+          >
+            ▼
+          </button>
+          <button 
+            className="panel-btn"
+            onClick={() => setIsVisible(false)}
+            title="הסתר"
+          >
+            ✕
+          </button>
+        </div>
       </div>
-
-      {selectedCategory && (
+      
+      <div className="panel-content">
         <div className="form-group">
-          <label>דגם:</label>
+          <label>קטגוריה:</label>
           <select 
-            value={selectedModel} 
-            onChange={(e) => setSelectedModel(e.target.value)}
-            name="model_id"
+            value={selectedCategory} 
+            name="category_id"
+            onChange={(e) => setSelectedCategory(e.target.value)}
             disabled={loading}
           >
-            <option value="">בחר דגם...</option>
-            {models.map(model => (
-              <option key={model.id} value={model.id}>
-                {model.name_he}
+            <option value="">בחר קטגוריה...</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.icon} {category.name_he}
               </option>
             ))}
           </select>
         </div>
-      )}
 
-      {selectedModel && (
-        <div className="form-group">
-          <label>שם מותאם אישית (אופציונלי):</label>
-          <input 
-            type="text" 
-            value={objectName}
-            name="objectName"
-            onChange={(e) => setObjectName(e.target.value)}
-            placeholder="הכנס שם מותאם אישית..."
-          />
-        </div>
-      )}
-
-      <div className="button-group">
-        {!isPlacing ? (
-          <button 
-            className="start-placing-btn"
-            onClick={handleStartPlacing}
-            disabled={!selectedModel || loading}
-          >
-            🎯 התחל מיקום
-          </button>
-        ) : (
-          <button 
-            className="cancel-placing-btn"
-            onClick={onCancelPlacing}
-          >
-            ❌ בטל מיקום
-          </button>
+        {selectedCategory && (
+          <div className="form-group">
+            <label>דגם:</label>
+            <select 
+              value={selectedModel} 
+              onChange={(e) => setSelectedModel(e.target.value)}
+              name="model_id"
+              disabled={loading}
+            >
+              <option value="">בחר דגם...</option>
+              {models.map(model => (
+                <option key={model.id} value={model.id}>
+                  {model.name_he}
+                </option>
+              ))}
+            </select>
+          </div>
         )}
-      </div>
 
-      {isPlacing && (
-        <div className="placing-status">
-          🎯 לחץ על המפה כדי למקם את האובייקט
-          <br />
-          💾 האובייקט יישמר אוטומטית במסד הנתונים
+        {selectedModel && (
+          <div className="form-group">
+            <label>שם מותאם אישית (אופציונלי):</label>
+            <input 
+              type="text" 
+              value={objectName}
+              name="objectName"
+              onChange={(e) => setObjectName(e.target.value)}
+              placeholder="הכנס שם מותאם אישית..."
+            />
+          </div>
+        )}
+
+        <div className="button-group">
+          {!isPlacing ? (
+            <button 
+              className="start-placing-btn"
+              onClick={handleStartPlacing}
+              disabled={!selectedModel || loading}
+            >
+              🎯 התחל מיקום
+            </button>
+          ) : (
+            <button 
+              className="cancel-placing-btn"
+              onClick={onCancelPlacing}
+            >
+              ❌ בטל מיקום
+            </button>
+          )}
         </div>
-      )}
 
-      {loading && <div className="loading">טוען...</div>}
+        {isPlacing && (
+          <div className="placing-status">
+            🎯 לחץ על המפה כדי למקם את האובייקט
+            <br />
+            💾 האובייקט יישמר אוטומטית במסד הנתונים
+          </div>
+        )}
+
+        {loading && <div className="loading">טוען...</div>}
+      </div>
     </div>
   );
 };
