@@ -46,7 +46,21 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     try {
       const result = await buildingService.getBuilding(buildingId);
       if (result.success && result.data) {
-        setFormData(result.data);
+        // Ensure all fields have defined values to prevent controlled/uncontrolled input errors
+        const sanitizedData = {};
+        Object.keys(formData).forEach(key => {
+          if (key === 'floor_colors') {
+            // Ensure floor_colors is always an array
+            sanitizedData[key] = Array.isArray(result.data[key]) ? result.data[key] : [];
+          } else if (key === 'height') {
+            // Ensure height is always a number or empty string
+            sanitizedData[key] = result.data[key] != null ? result.data[key] : '';
+          } else {
+            // Ensure all other fields are always strings
+            sanitizedData[key] = result.data[key] != null ? result.data[key] : '';
+          }
+        });
+        setFormData(sanitizedData);
       }
     } catch (error) {
       console.error('Error loading building data:', error);
