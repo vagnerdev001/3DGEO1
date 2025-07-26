@@ -1,0 +1,47 @@
+.admin-panel {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(38, 38, 38, 0.9);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  color: #fff;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 10;
+  direction: rtl;
+  text-align: right;
+}
+
+.admin-panel h3 {
+  margin-top: 0;
+  font-size: 16px;
+  border-bottom: 1px solid #555;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.admin-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+
+.upload-btn {
+  background: linear-gradient(135deg, #FF6B6B, #FF5252);
+  color: white;
+}
+
+.upload-btn:hover {
+  background: linear-gradient(135deg, #FF5252, #F44336);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
