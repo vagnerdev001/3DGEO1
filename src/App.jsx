@@ -54,6 +54,8 @@ function App() {
     setCurrentBuildingId(buildingEntity.id);
     setShowDataForm(true);
   };
+
+  const handleCreateBuilding = async (viewerPoints) => {
     console.log('Viewer points:', viewerPoints.length);
     console.log('🏗️ CREATE BUILDING CLICKED');
     const pointsToUse = activeShapePoints.length > 0 ? activeShapePoints : viewerPoints;
