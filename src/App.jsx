@@ -109,9 +109,13 @@ function App() {
     if (savedFloorColors && savedFloorColors.length === numFloors) {
       // Apply transparency to saved colors
       floorColors = savedFloorColors.map(colorHex => {
-        const color = window.Cesium.Color.fromCssColorString(colorHex);
-        // If color parsing fails, use a default grey color
-        return (color || window.Cesium.Color.GREY).withAlpha(transparency);
+        try {
+          const color = window.Cesium.Color.fromCssColorString(colorHex);
+          return color.withAlpha(transparency);
+        } catch (error) {
+          console.warn('Invalid color string:', colorHex, 'using default');
+          return window.Cesium.Color.GREY.withAlpha(transparency);
+        }
       });
     } else {
       // Generate new colors with transparency
