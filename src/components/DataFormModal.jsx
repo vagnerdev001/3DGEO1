@@ -27,6 +27,7 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     height: '',
     ai_command: '',
     floor_colors: [],
+    transparency: 0.9,
     הערכת_מחיר_שמאי: '',
     ערך_משוער_לפי_מאפייני_סביבה: '',
     מחיר_ממוצע_למטר: '',
@@ -207,6 +208,23 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
             <div><label htmlFor="no_apt">מספר דירות</label><input type="text" id="no_apt" name="no_apt" value={formData.no_apt} onChange={handleInputChange} /></div>
             <div><label htmlFor="height">גובה (מטר)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
             <div><label htmlFor="ai_command">פקודת AI</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
+            <div>
+              <label htmlFor="transparency">שקיפות ({Math.round(formData.transparency * 100)}%)</label>
+              <input 
+                type="range" 
+                id="transparency" 
+                name="transparency" 
+                min="0.1" 
+                max="1.0" 
+                step="0.1" 
+                value={formData.transparency} 
+                onChange={handleInputChange}
+                style={{
+                  width: '100%',
+                  marginTop: '5px'
+                }}
+              />
+            </div>
             <div><label htmlFor="הערכת_מחיר_שמאי">הערכת מחיר שמאי</label><input type="text" id="הערכת_מחיר_שמאי" name="הערכת_מחיר_שמאי" value={formData.הערכת_מחיר_שמאי} onChange={handleInputChange} /></div>
             <div><label htmlFor="ערך_משוער_לפי_מאפייני_סביבה">ערך משוער לפי מאפייני סביבה</label><input type="text" id="ערך_משוער_לפי_מאפייני_סביבה" name="ערך_משוער_לפי_מאפייני_סביבה" value={formData.ערך_משוער_לפי_מאפייני_סביבה} onChange={handleInputChange} /></div>
             <div><label htmlFor="מחיר_ממוצע_למטר">מחיר ממוצע למטר</label><input type="text" id="מחיר_ממוצע_למטר" name="מחיר_ממוצע_למטר" value={formData.מחיר_ממוצע_למטר} onChange={handleInputChange} /></div>

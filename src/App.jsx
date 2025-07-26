@@ -65,7 +65,7 @@ function App() {
             viewer.entities.remove(existingBuilding);
           }
           // Also remove all floor entities for this building
-          const floorEntities = viewer.entities.values.filter(entity => 
+              material: floorColors[floor].withAlpha(transparency),
             entity.id && entity.id.startsWith(`${building.id}-floor-`)
           );
           floorEntities.forEach(entity => {
@@ -85,13 +85,14 @@ function App() {
         const height = parseFloat(building.height) || 30;
         const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
         const floorColors = building.floor_colors || [];
+        const transparency = parseFloat(building.transparency) || 0.9;
         
-        createSavedBuilding(viewer, building.id, points, height, floors, floorColors);
+        createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
       }
     });
   };
 
-  const createSavedBuilding = (viewer, buildingId, points, totalHeight, numFloors, savedFloorColors) => {
+  const createSavedBuilding = (viewer, buildingId, points, totalHeight, numFloors, savedFloorColors, transparency = 0.9) => {
     console.log(`יוצר בניין שמור עם ${numFloors} קומות, גובה כולל: ${totalHeight}מ`);
     
     // Create rounded corners for the building footprint
@@ -105,8 +106,8 @@ function App() {
     
     // Use saved colors or generate new ones
     const floorColors = savedFloorColors && savedFloorColors.length === numFloors 
-      ? savedFloorColors.map(colorHex => window.Cesium.Color.fromCssColorString(colorHex))
-      : generateFloorColors(numFloors);
+      ? savedFloorColors.map(colorHex => window.Cesium.Color.fromCssColorString(colorHex).withAlpha(transparency))
+      : generateFloorColors(numFloors, transparency);
     
     // Create each floor as a separate polygon
     for (let floor = 0; floor < numFloors; floor++) {
@@ -347,7 +348,7 @@ function App() {
   };
   
   // Generate colors for floors (gradient from warm bottom to cool top)
-  const generateFloorColors = (numFloors) => {
+  const generateFloorColors = (numFloors, transparency = 0.9) => {
     const colors = [];
     for (let i = 0; i < numFloors; i++) {
       const ratio = i / Math.max(1, numFloors - 1);
@@ -357,7 +358,7 @@ function App() {
       const saturation = 0.7 - (ratio * 0.3); // Slightly less saturated at top
       const brightness = 0.8 + (ratio * 0.2); // Slightly brighter at top
       
-      const color = window.Cesium.Color.fromHsl(hue, saturation, brightness, 0.9);
+      const color = window.Cesium.Color.fromHsl(hue, saturation, brightness, transparency);
       colors.push(color);
     }
     return colors;
