@@ -497,57 +497,6 @@ function App() {
     }
   }, [viewerRef.current, savedBuildings, showCustomBuildings]);
 
-  return (
-    <div className="app">
-      <CesiumViewer
-        ref={viewerRef}
-        isDrawing={isDrawing}
-        activeShapePoints={activeShapePoints}
-        currentLayer={currentLayer}
-        onDrawingStateChange={handleDrawingStateChange}
-        onBuildingClick={handleBuildingClick}
-      />
-      <AIControls
-        isDrawing={isDrawing}
-        statusMessage={statusMessage}
-        aiCommand={aiCommand}
-        onAiCommandChange={setAiCommand}
-        onStartDrawing={handleStartDrawing}
-        onCreateBuilding={handleCreateBuilding}
-        canCreate={activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0}
-      />
-      <LayerSwitcher
-        currentLayer={currentLayer}
-        onLayerChange={setCurrentLayer}
-      />
-      {showDataForm && (
-        <DataFormModal
-          buildingId={currentBuildingId}
-          onClose={() => {
-            setShowDataForm(false);
-            setCurrentBuildingId(null);
-          }}
-          onSave={(message, shouldRefresh, transparency) => {
-          }
-          }
-          onSave={(message, shouldRefresh, transparency, isPreview = false) => {
-            setStatusMessage(message);
-            if ((shouldRefresh || isPreview) && transparency !== undefined && viewerRef.current) {
-              // Refresh the specific building with new transparency
-              const building = savedBuildings.find(b => b.id === currentBuildingId);
-              if (building && viewerRef.current && viewerRef.current.viewer) {
-                updateBuildingTransparency(building, transparency, isPreview);
-              }
-            } else if (shouldRefresh && !isPreview) {
-              // Reload all buildings to get the updated data
-              loadSavedBuildings();
-            }
-          }}
-        />
-      )}
-    </div>
-  );
-
   // Helper function to update building transparency
   const updateBuildingTransparency = async (building, transparency, isPreview = false) => {
     if (!viewerRef.current || !viewerRef.current.viewer) return;
@@ -596,44 +545,47 @@ function App() {
       createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
     }
   };
-}
 
-export default App;
-                
-                // Remove existing building and floors
-                const existingBuilding = viewer.entities.getById(currentBuildingId);
-                if (existingBuilding) {
-                  viewer.entities.remove(existingBuilding);
-                }
-                const floorEntities = viewer.entities.values.filter(entity => 
-                  entity.id && entity.id.startsWith(`${currentBuildingId}-floor-`)
-                );
-                floorEntities.forEach(entity => {
-                  viewer.entities.remove(entity);
-                });
-                
-                // Recreate with new transparency
-                if (building.geometry_points && building.geometry_points.length >= 3) {
-                  const points = building.geometry_points.map(point => 
-                    window.Cesium.Cartesian3.fromDegrees(
-                      point.longitude, 
-                      point.latitude, 
-                      point.height || 0
-                    )
-                  );
-                  
-                  const height = parseFloat(building.height) || 30;
-                  const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
-                  
-                  // Get updated floor colors from form data
-                  const updatedBuilding = savedBuildings.find(b => b.id === currentBuildingId);
-                  const floorColors = updatedBuilding ? updatedBuilding.floor_colors || [] : [];
-                  
-                  createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
-                }
+  return (
+    <div className="app">
+      <CesiumViewer
+        ref={viewerRef}
+        isDrawing={isDrawing}
+        activeShapePoints={activeShapePoints}
+        currentLayer={currentLayer}
+        onDrawingStateChange={handleDrawingStateChange}
+        onBuildingClick={handleBuildingClick}
+      />
+      <AIControls
+        isDrawing={isDrawing}
+        statusMessage={statusMessage}
+        aiCommand={aiCommand}
+        onAiCommandChange={setAiCommand}
+        onStartDrawing={handleStartDrawing}
+        onCreateBuilding={handleCreateBuilding}
+        canCreate={activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0}
+      />
+      <LayerSwitcher
+        currentLayer={currentLayer}
+        onLayerChange={setCurrentLayer}
+      />
+      {showDataForm && (
+        <DataFormModal
+          buildingId={currentBuildingId}
+          onClose={() => {
+            setShowDataForm(false);
+            setCurrentBuildingId(null);
+          }}
+          onSave={(message, shouldRefresh, transparency, isPreview = false) => {
+            setStatusMessage(message);
+            if ((shouldRefresh || isPreview) && transparency !== undefined && viewerRef.current) {
+              // Refresh the specific building with new transparency
+              const building = savedBuildings.find(b => b.id === currentBuildingId);
+              if (building && viewerRef.current && viewerRef.current.viewer) {
+                updateBuildingTransparency(building, transparency, isPreview);
               }
             } else if (shouldRefresh && !isPreview) {
-              // Just reload all buildings to get the updated data
+              // Reload all buildings to get the updated data
               loadSavedBuildings();
             }
           }}
