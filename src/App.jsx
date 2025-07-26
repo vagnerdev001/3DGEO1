@@ -26,19 +26,14 @@ function App() {
   };
 
   const handleStartDrawing = () => {
-    if (isDrawing) {
-      // Stop drawing
-      setIsDrawing(false);
-      setActiveShapePoints([]);
-      setStatusMessage("Drawing cancelled.");
-      if (viewerRef.current) {
-        viewerRef.current.entities.removeAll();
+    if (viewerRef.current) {
+      if (isDrawing) {
+        // Stop/Cancel drawing
+        viewerRef.current.cancelDrawing();
+      } else {
+        // Start drawing
+        viewerRef.current.startDrawing();
       }
-    } else {
-      // Start drawing
-      setIsDrawing(true);
-      setActiveShapePoints([]);
-      setStatusMessage("Click to add points. Double-click to finish.");
     }
   };
 

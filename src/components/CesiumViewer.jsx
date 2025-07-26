@@ -12,8 +12,29 @@ const CesiumViewer = forwardRef(({
   const handlerRef = useRef(null);
   const drawingEntitiesRef = useRef([]);
   const activePointsRef = useRef([]);
+  const isDrawingRef = useRef(false);
 
-  useImperativeHandle(ref, () => viewerRef.current);
+  useImperativeHandle(ref, () => ({
+    ...viewerRef.current,
+    startDrawing: () => {
+      isDrawingRef.current = true;
+      activePointsRef.current = [];
+      drawingEntitiesRef.current = [];
+      onDrawingStateChange(true, [], null, null, "Click to add points. Double-click to finish.");
+    },
+    cancelDrawing: () => {
+      isDrawingRef.current = false;
+      activePointsRef.current = [];
+      // Clear all drawing entities
+      if (viewerRef.current) {
+        drawingEntitiesRef.current.forEach(entity => {
+          viewerRef.current.entities.remove(entity);
+        });
+      }
+      drawingEntitiesRef.current = [];
+      onDrawingStateChange(false, [], null, null, "Drawing cancelled. Click 'Start Drawing' to begin.");
+    }
+  }));
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -85,7 +106,7 @@ const CesiumViewer = forwardRef(({
     handlerRef.current = handler;
 
     handler.setInputAction((event) => {
-      if (isDrawing) {
+      if (isDrawingRef.current) {
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
           activePointsRef.current.push(earthPosition);
@@ -136,7 +157,7 @@ const CesiumViewer = forwardRef(({
     }, window.Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
     handler.setInputAction((event) => {
-      if (isDrawing && activePointsRef.current.length >= 3) {
+      if (isDrawingRef.current && activePointsRef.current.length >= 3) {
         terminateShape();
       }
     }, window.Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
@@ -164,6 +185,7 @@ const CesiumViewer = forwardRef(({
         });
         drawingEntitiesRef.current.push(previewPolygon);
       }
+      isDrawingRef.current = false;
       onDrawingStateChange(
         false, 
         [...activePointsRef.current], 
@@ -214,13 +236,8 @@ const CesiumViewer = forwardRef(({
 
   // Handle drawing state changes
   useEffect(() => {
-    if (!isDrawing && viewerRef.current && !viewerRef.current.isDestroyed()) {
-      // Clear all drawing entities when canceling drawing
-      drawingEntitiesRef.current.forEach(entity => viewerRef.current.entities.remove(entity));
-      drawingEntitiesRef.current = [];
-      
-      activePointsRef.current = [];
-    }
+    // Update internal drawing state
+    isDrawingRef.current = isDrawing;
   }, [isDrawing]);
 
   return <div ref={containerRef} id="cesiumContainer" />;
