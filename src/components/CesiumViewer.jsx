@@ -241,7 +241,14 @@ const CesiumViewer = forwardRef(({
           const height = cartographic.height;
           
           console.log('✅ Position calculated:', { longitude, latitude, height });
-          onObjectPositionSelect({ longitude, latitude, height });
+          
+          // Call the position select handler immediately
+          if (onObjectPositionSelect) {
+            console.log('📞 Calling onObjectPositionSelect');
+            onObjectPositionSelect({ longitude, latitude, height });
+          } else {
+            console.error('❌ onObjectPositionSelect is not defined');
+          }
         } else {
           console.log('❌ Could not calculate earth position');
         }

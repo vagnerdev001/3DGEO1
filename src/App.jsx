@@ -136,22 +136,29 @@ function App() {
 
   const handleObjectPositionSelect = (position) => {
     console.log('🎯 handleObjectPositionSelect called with:', position);
+    console.log('🔄 Setting selected position and triggering placement');
     setSelectedObjectPosition(position);
     setStatusMessage(`מיקום נבחר: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)}`);
     
-    // Place object immediately
-    setTimeout(() => {
-      handleDirectObjectPlacement(position);
-    }, 100);
+    // Place object immediately without delay
+    console.log('🚀 Calling handleDirectObjectPlacement immediately');
+    handleDirectObjectPlacement(position);
   };
 
   const handleDirectObjectPlacement = async (position) => {
     console.log('🏗️ handleDirectObjectPlacement called with:', position);
+    console.log('🔍 Looking for form elements...');
     
     // Get current selection from state or DOM
     const modelSelect = document.querySelector('#object-placer select[name="model_id"]');
     const categorySelect = document.querySelector('#object-placer select[name="category_id"]');
     const nameInput = document.querySelector('#object-placer input[name="objectName"]');
+    
+    console.log('📋 Form elements found:', {
+      modelSelect: !!modelSelect,
+      categorySelect: !!categorySelect,
+      nameInput: !!nameInput
+    });
     
     const selectedModel = modelSelect?.value;
     const selectedCategory = categorySelect?.value;
@@ -160,12 +167,21 @@ function App() {
     console.log('📋 Form values:', { selectedModel, selectedCategory, objectName });
     
     if (!selectedModel) {
+      console.error('❌ No model selected');
       setStatusMessage('❌ שגיאה: לא נמצא דגם נבחר');
       setIsPlacingObject(false);
       return;
     }
 
+    if (!selectedCategory) {
+      console.error('❌ No category selected');
+      setStatusMessage('❌ שגיאה: לא נמצאה קטגוריה נבחרת');
+      setIsPlacingObject(false);
+      return;
+    }
+
     setStatusMessage('💾 שומר אובייקט במסד הנתונים...');
+    console.log('💾 Starting database save process...');
 
     try {
       const { objectsService } = await import('./services/objectsService');
