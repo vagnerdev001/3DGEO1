@@ -227,8 +227,10 @@ const CesiumViewer = forwardRef(({
     // Left click handler
     handler.setInputAction((event) => {
       console.log('Left click - isDrawing:', isDrawingRef.current);
+      console.log('Left click - isPlacingObject:', isPlacingObject);
       
       if (isPlacingObject) {
+        console.log('📍 Processing object placement click');
         // Handle object placement
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
@@ -239,7 +241,10 @@ const CesiumViewer = forwardRef(({
           
           console.log('📍 Object position selected:', { longitude, latitude, height });
           onObjectPositionSelect({ longitude, latitude, height });
+        } else {
+          console.log('❌ Could not get earth position from click');
         }
+        return; // Important: return early to prevent other click handlers
       } else if (isDrawingRef.current) {
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
