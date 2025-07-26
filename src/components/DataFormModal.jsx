@@ -58,6 +58,82 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     }));
   };
 
+  const handleFloorColorChange = (floorIndex, newColor) => {
+    const newColors = [...(formData.floor_colors || [])];
+    newColors[floorIndex] = newColor;
+    setFormData(prev => ({
+      ...prev,
+      floor_colors: newColors
+    }));
+  };
+
+  const generateGradientColors = () => {
+    const numFloors = formData.floor_colors?.length || 0;
+    if (numFloors === 0) return;
+    
+    const newColors = [];
+    for (let i = 0; i < numFloors; i++) {
+      const ratio = i / Math.max(1, numFloors - 1);
+      
+      // Create a gradient from warm colors (bottom) to cool colors (top)
+      const hue = 0.15 - (ratio * 0.4); // From yellow-orange to blue-purple
+      const saturation = 0.7 - (ratio * 0.3); // Slightly less saturated at top
+      const brightness = 0.8 + (ratio * 0.2); // Slightly brighter at top
+      
+      // Convert HSL to RGB to HEX
+      const rgb = hslToRgb(hue, saturation, brightness);
+      const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      newColors.push(hex);
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      floor_colors: newColors
+    }));
+  };
+
+  const resetToDefaultColors = () => {
+    const numFloors = formData.floor_colors?.length || 0;
+    if (numFloors === 0) return;
+    
+    const defaultColors = Array(numFloors).fill('#4CAF50');
+    setFormData(prev => ({
+      ...prev,
+      floor_colors: defaultColors
+    }));
+  };
+
+  // Helper functions for color conversion
+  const hslToRgb = (h, s, l) => {
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l; // achromatic
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255)
+    };
+  };
+
+  const rgbToHex = (r, g, b) => {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -112,98 +188,26 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
             <div><label htmlFor="codeapp">codeapp</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
             <div><label htmlFor="height">Height (m)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
             <div><label htmlFor="ai_command">AI Command</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
-          </div>
-          
-          {/* Floor Colors Section */}
-          <div style={{marginTop: '20px', borderTop: '1px solid #555', paddingTop: '15px'}}>
-            <h4 style={{margin: '0 0 15px 0', color: '#fff'}}>Floor Colors ({formData.floor_colors?.length || 0} floors)</h4>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
-              {formData.floor_colors && formData.floor_colors.length > 0 ? (
-                formData.floor_colors.map((color, index) => (
-                  <div key={index} style={{
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '10px',
-                    padding: '8px',
-                    backgroundColor: '#333',
-                    borderRadius: '6px',
-                    border: '1px solid #555'
-                  }}>
-                    <span style={{fontSize: '13px', color: '#bbb', minWidth: '60px'}}>
-                      Floor {index + 1}:
-                    </span>
+            <div style={{gridColumn: '1 / -1'}}>
+              <label>Floor Colors</label>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px'}}>
+                {formData.floor_colors && formData.floor_colors.map((color, index) => (
+                  <div key={index} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                    <span style={{fontSize: '12px', color: '#bbb'}}>Floor {index + 1}:</span>
                     <input 
                       type="color" 
-                      value={color || '#4CAF50'} 
-                      onChange={(e) => handleFloorColorChange(index, e.target.value)}
-                      style={{
-                        width: '50px', 
-                        height: '35px', 
-                        border: 'none', 
-                        borderRadius: '4px',
-                        cursor: 'pointer'
+                      value={color} 
+                      onChange={(e) => {
+                        const newColors = [...formData.floor_colors];
+                        newColors[index] = e.target.value;
+                        setFormData(prev => ({...prev, floor_colors: newColors}));
                       }}
+                      style={{width: '40px', height: '30px', border: 'none', borderRadius: '4px'}}
                     />
-                    <span style={{
-                      fontSize: '11px', 
-                      color: '#888',
-                      fontFamily: 'monospace',
-                      backgroundColor: '#222',
-                      padding: '2px 6px',
-                      borderRadius: '3px'
-                    }}>
-                      {color || '#4CAF50'}
-                    </span>
                   </div>
-                ))
-              ) : (
-                <div style={{
-                  gridColumn: '1 / -1',
-                  textAlign: 'center',
-                  color: '#888',
-                  fontStyle: 'italic',
-                  padding: '20px'
-                }}>
-                  No floor colors available. Create a building first to see floor colors.
-                </div>
-              )}
-            </div>
-            
-            {/* Color Palette Actions */}
-            {formData.floor_colors && formData.floor_colors.length > 0 && (
-              <div style={{marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-                <button 
-                  type="button"
-                  onClick={generateGradientColors}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  🌈 Generate Gradient
-                </button>
-                <button 
-                  type="button"
-                  onClick={resetToDefaultColors}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#ff9800',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  🔄 Reset Colors
-                </button>
+                ))}
               </div>
-            )}
+            </div>
           </div>
         </form>
       </div>
