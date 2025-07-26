@@ -503,20 +503,53 @@ function App() {
     
     const viewer = viewerRef.current.viewer;
     
-    // Remove existing building and floors
-    const existingBuilding = viewer.entities.getById(currentBuildingId);
-    if (existingBuilding) {
-      viewer.entities.remove(existingBuilding);
+    // Get the latest floor colors if not preview
+    let floorColors = building.floor_colors || [];
+    if (!isPreview) {
+      try {
+        const buildingResult = await buildingService.getBuilding(currentBuildingId);
+        if (buildingResult.success && buildingResult.data && buildingResult.data.floor_colors) {
+          floorColors = buildingResult.data.floor_colors;
+        }
+      } catch (error) {
+        console.error('Error getting updated building data:', error);
+      }
     }
+    
+    // Update existing floor entities' materials instead of recreating them
     const floorEntities = viewer.entities.values.filter(entity => 
       entity.id && entity.id.startsWith(`${currentBuildingId}-floor-`)
     );
-    floorEntities.forEach(entity => {
-      viewer.entities.remove(entity);
+    
+    floorEntities.forEach((entity, index) => {
+      if (entity.polygon && entity.polygon.material) {
+        // Get the color for this floor
+        let floorColor;
+        if (floorColors && floorColors[index]) {
+          try {
+            const color = window.Cesium.Color.fromCssColorString(floorColors[index]);
+            floorColor = color.withAlpha(transparency);
+          } catch (error) {
+            console.warn('Invalid color string:', floorColors[index], 'using default');
+            floorColor = window.Cesium.Color.GREY.withAlpha(transparency);
+          }
+        } else {
+          // Generate default color if no saved color
+          const numFloors = floorEntities.length;
+          const ratio = index / Math.max(1, numFloors - 1);
+          const hue = 0.15 - (ratio * 0.4);
+          const saturation = 0.7 - (ratio * 0.3);
+          const brightness = 0.8 + (ratio * 0.2);
+          floorColor = window.Cesium.Color.fromHsl(hue, saturation, brightness, transparency);
+        }
+        
+        // Update the material
+        entity.polygon.material = floorColor;
+      }
     });
     
-    // Recreate with new transparency
-    if (building.geometry_points && building.geometry_points.length >= 3) {
+    // If no floor entities exist, recreate the building (this handles the case where building doesn't exist yet)
+    if (floorEntities.length === 0 && building.geometry_points && building.geometry_points.length >= 3) {
       const points = building.geometry_points.map(point => 
         window.Cesium.Cartesian3.fromDegrees(
           point.longitude, 
@@ -527,20 +560,6 @@ function App() {
       
       const height = parseFloat(building.height) || 30;
       const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
-      
-      // Get the latest floor colors
-      let floorColors = building.floor_colors || [];
-      if (!isPreview) {
-        // For final save, get the latest data from database
-        try {
-          const buildingResult = await buildingService.getBuilding(currentBuildingId);
-          if (buildingResult.success && buildingResult.data && buildingResult.data.floor_colors) {
-            floorColors = buildingResult.data.floor_colors;
-          }
-        } catch (error) {
-          console.error('Error getting updated building data:', error);
-        }
-      }
       
       createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
     }
