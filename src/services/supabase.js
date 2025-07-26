@@ -42,7 +42,8 @@ export const buildingService = {
         color_sofi: data.color_sofi || '',
         full_addresse: data.full_addresse || '',
         mi_address: data.mi_address || '',
-        codeapp: data.codeapp || ''
+        codeapp: data.codeapp || '',
+        weblink: data.weblink || ''
       };
       
       const buildingData = {

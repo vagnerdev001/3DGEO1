@@ -5,6 +5,9 @@ const BuildingPopup = ({ building, position, onEdit, onClose }) => {
   const [showEmbed, setShowEmbed] = useState(false);
   const [activePlan, setActivePlan] = useState('A');
   
+  console.log('🏢 BuildingPopup - building data:', building);
+  console.log('🔗 BuildingPopup - weblink:', building?.weblink);
+  
   if (!building || !position) return null;
 
   const handleEdit = () => {

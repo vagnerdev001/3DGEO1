@@ -185,6 +185,9 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
   const handleSave = async () => {
     setLoading(true);
     try {
+      console.log('🔍 Saving building data:', formData);
+      console.log('🔗 Weblink value:', formData.weblink);
+      
       const result = await buildingService.saveBuilding(
         buildingId, 
         formData, 
@@ -194,6 +197,7 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         formData.floor_colors
       );
       if (result.success) {
+        console.log('✅ Building saved successfully:', result.data);
         // Trigger building refresh
         onSave && onSave('נתוני הבניין נשמרו בהצלחה!', true, parseFloat(formData.transparency) || 0.9);
         onClose();
