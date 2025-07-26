@@ -33,7 +33,8 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     ערך_משוער_לפי_מאפייני_סביבה: '',
     מחיר_ממוצע_למטר: '',
     צרכים_ציבוריים: '',
-    שיוך_לרשות: ''
+    שיוך_לרשות: '',
+    weblink: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -246,6 +247,18 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
             <div><label htmlFor="שיוך_לרשות">שיוך לרשות</label><input type="text" id="שיוך_לרשות" name="שיוך_לרשות" value={formData.שיוך_לרשות} onChange={handleInputChange} /></div>
             <div><label htmlFor="street_is_tama">רחוב תמ"א</label><input type="text" id="street_is_tama" name="street_is_tama" value={formData.street_is_tama} onChange={handleInputChange} /></div>
             <div><label htmlFor="color">צבע</label><input type="text" id="color" name="color" value={formData.color} onChange={handleInputChange} /></div>
+            <div style={{gridColumn: '1 / -1'}}>
+              <label htmlFor="weblink">קישור אמבדד (iframe)</label>
+              <input 
+                type="url" 
+                id="weblink" 
+                name="weblink" 
+                value={formData.weblink} 
+                onChange={handleInputChange}
+                placeholder="https://example.com/embed..."
+                style={{width: '100%'}}
+              />
+            </div>
             <div><label htmlFor="מיון_2">מיון 2</label><input type="text" id="מיון_2" name="מיון_2" value={formData.מיון_2} onChange={handleInputChange} /></div>
             <div><label htmlFor="masadcolor2">צבע מסד 2</label><input type="text" id="masadcolor2" name="masadcolor2" value={formData.masadcolor2} onChange={handleInputChange} /></div>
             <div><label htmlFor="color_sofi">צבע סופי</label><input type="text" id="color_sofi" name="color_sofi" value={formData.color_sofi} onChange={handleInputChange} /></div>

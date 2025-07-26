@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './BuildingPopup.css';
 
 const BuildingPopup = ({ building, position, onEdit, onClose }) => {
-  const [activePlan, setActivePlan] = useState('A');
+  const [showEmbed, setShowEmbed] = useState(false);
   
   if (!building || !position) return null;
 
@@ -76,6 +76,17 @@ const BuildingPopup = ({ building, position, onEdit, onClose }) => {
           </div>
         </div>
         
+        {building.weblink && (
+          <div className="embed-section">
+            <button 
+              className="view-plans-btn"
+              onClick={() => setShowEmbed(true)}
+            >
+              📋 צפה בתוכניות בניין
+            </button>
+          </div>
+        )}
+        
         <div className="metadata-section">
           <h5>📊 פרטי בניין</h5>
           <div className="popup-row">
@@ -117,6 +128,31 @@ const BuildingPopup = ({ building, position, onEdit, onClose }) => {
           ✏️ ערוך בניין
         </button>
       </div>
+      
+      {/* Embed Viewer Modal */}
+      {showEmbed && building.weblink && (
+        <div className="embed-overlay" onClick={() => setShowEmbed(false)}>
+          <div className="embed-container" onClick={(e) => e.stopPropagation()}>
+            <div className="embed-header">
+              <h3>תוכניות בניין - {building.full_addres_q || 'לא צוין'}</h3>
+              <button 
+                className="embed-close-btn"
+                onClick={() => setShowEmbed(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              src={building.weblink}
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              allowFullScreen
+              title="תוכניות בניין"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
