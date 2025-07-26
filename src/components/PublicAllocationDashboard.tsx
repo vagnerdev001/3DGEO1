@@ -629,35 +629,26 @@ const PublicAllocationDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
-
-    {selectedPlan && (
-      <>
-        {/* Enhanced plan header */}
-        <div style={{ 
-          marginBottom: '30px',
-          padding: '25px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '12px',
-          color: 'white',
-          textAlign: 'center'
-        }}>
-          <h2 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>
-            📊 ניתוח מפורט: {selectedPlan.plan_name}
-          </h2>
-          <p style={{ margin: '0', fontSize: '16px', opacity: 0.9 }}>
-            {selectedPlan.description.split('.')[0]}
-          </p>
-        </div>
-                נוצר: {new Date(plan.created_date).toLocaleDateString('he-IL')}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {selectedPlan && (
         <>
+          {/* Enhanced plan header */}
+          <div style={{ 
+            marginBottom: '30px',
+            padding: '25px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '12px',
+            color: 'white',
+            textAlign: 'center'
+          }}>
+            <h2 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>
+              📊 ניתוח מפורט: {selectedPlan.plan_name}
+            </h2>
+            <p style={{ margin: '0', fontSize: '16px', opacity: 0.9 }}>
+              {selectedPlan.description.split('.')[0]}
+            </p>
+          </div>
+
           {/* Plan Metrics */}
           <div style={{ marginBottom: '30px' }}>
             <h2>📊 מדדי תוכנית: {selectedPlan.plan_name}</h2>
