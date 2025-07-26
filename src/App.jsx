@@ -23,6 +23,23 @@ function App() {
     setStatusMessage(message);
   };
 
+  const handleStartDrawing = () => {
+    if (isDrawing) {
+      // Stop drawing
+      setIsDrawing(false);
+      setActiveShapePoints([]);
+      setStatusMessage("Drawing cancelled.");
+      if (viewerRef.current) {
+        viewerRef.current.entities.removeAll();
+      }
+    } else {
+      // Start drawing
+      setIsDrawing(true);
+      setActiveShapePoints([]);
+      setStatusMessage("Click to add points. Double-click to finish.");
+    }
+  };
+
   const handleBuildingClick = (buildingEntity) => {
     setCurrentBuildingId(buildingEntity.id);
     setShowDataForm(true);
@@ -70,7 +87,10 @@ function App() {
         // Save building geometry and AI command to database
         await buildingService.saveBuilding(
           buildingId, 
-          {}, // Empty data object, will be filled in modal
+          {
+            height: height,
+            ai_command: aiCommand
+          },
           activeShapePoints.map(point => ({
             longitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).longitude),
             latitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).latitude),
@@ -82,6 +102,7 @@ function App() {
         
         setShowDataForm(true);
         setActiveShapePoints([]);
+        setAiCommand('');
       } else {
         setStatusMessage('AI could not determine a height.');
       }
@@ -131,7 +152,7 @@ function App() {
         statusMessage={statusMessage}
         aiCommand={aiCommand}
         onAiCommandChange={setAiCommand}
-        onStartDrawing={() => handleDrawingStateChange(!isDrawing, [], null, null, isDrawing ? 'Drawing cancelled.' : 'Click to add points. Double-click to finish.')}
+        onStartDrawing={handleStartDrawing}
         onCreateBuilding={handleCreateBuilding}
         canCreate={activeShapePoints.length >= 3 && !isDrawing}
       />

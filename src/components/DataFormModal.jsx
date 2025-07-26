@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { buildingService } from '../services/supabase';
 import './DataFormModal.css';
 
-const DataFormModal = ({ isOpen, onClose, buildingId }) => {
+const DataFormModal = ({ buildingId, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     wkt: '',
     full_addres_q: '',
@@ -30,10 +30,10 @@ const DataFormModal = ({ isOpen, onClose, buildingId }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && buildingId) {
+    if (buildingId) {
       loadBuildingData();
     }
-  }, [isOpen, buildingId]);
+  }, [buildingId]);
 
   const loadBuildingData = async () => {
     setLoading(true);
@@ -68,12 +68,15 @@ const DataFormModal = ({ isOpen, onClose, buildingId }) => {
         parseFloat(formData.height) || 0
       );
       if (result.success) {
+        onSave && onSave('Building data saved successfully!');
         onClose();
       } else {
         console.error('Error saving building:', result.error);
+        onSave && onSave('Error saving building data.');
       }
     } catch (error) {
       console.error('Error saving building data:', error);
+      onSave && onSave('Error saving building data.');
     } finally {
       setLoading(false);
     }
@@ -110,7 +113,7 @@ const DataFormModal = ({ isOpen, onClose, buildingId }) => {
           </div>
         </form>
       </div>
-      <div className="form-buttons">
+      <div id="data-form-buttons">
         <button onClick={handleSave} disabled={loading}>
           {loading ? 'Saving...' : 'Save Data'}
         </button>

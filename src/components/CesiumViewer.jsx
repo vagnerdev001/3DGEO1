@@ -89,6 +89,15 @@ const CesiumViewer = forwardRef(({
         if (window.Cesium.defined(earthPosition)) {
           activePointsRef.current.push(earthPosition);
           
+          // Update parent component with new points
+          onDrawingStateChange(
+            true, 
+            [...activePointsRef.current], 
+            null, 
+            null, 
+            `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Double-click to finish.' : 'Continue adding points.'}`
+          );
+          
           // Add visual point
           const pointEntity = viewer.entities.add({
             position: earthPosition,
@@ -133,12 +142,24 @@ const CesiumViewer = forwardRef(({
 
     const terminateShape = () => {
       clearDrawingAids();
+      // Create a preview polygon
+      if (activePointsRef.current.length >= 3 && viewerRef.current) {
+        const previewPolygon = viewerRef.current.entities.add({
+          polygon: {
+            hierarchy: new window.Cesium.PolygonHierarchy(activePointsRef.current),
+            material: window.Cesium.Color.BLUE.withAlpha(0.3),
+            outline: true,
+            outlineColor: window.Cesium.Color.BLUE
+          }
+        });
+        drawingEntitiesRef.current.push(previewPolygon);
+      }
       onDrawingStateChange(
         false, 
         [...activePointsRef.current], 
         null, 
         null, 
-        'Footprint complete. Enter extrusion command.'
+        'Footprint complete. Enter AI command and click "Create Building".'
       );
     };
 
@@ -161,16 +182,14 @@ const CesiumViewer = forwardRef(({
 
   // Handle drawing state changes
   useEffect(() => {
-    if (!isDrawing && viewerRef.current && !viewerRef.current.isDestroyed()) {
+    if (!isDrawing && viewerRef.current && !viewerRef.current.isDestroyed() && activeShapePoints.length === 0) {
       // Clear drawing aids when stopping drawing
       drawingEntitiesRef.current.forEach(entity => viewerRef.current.entities.remove(entity));
       drawingEntitiesRef.current = [];
       
-      if (!isDrawing) {
-        activePointsRef.current = [];
-      }
+      activePointsRef.current = [];
     }
-  }, [isDrawing]);
+  }, [isDrawing, activeShapePoints.length]);
 
   return <div ref={containerRef} id="cesiumContainer" />;
 });
