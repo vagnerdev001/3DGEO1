@@ -78,7 +78,38 @@ const CesiumViewer = forwardRef(({
     },
     hasCompletedPolygon: () => {
       return activePointsRef.current.length >= 3 && !isDrawingRef.current;
-    }
+    },
+    add3DModel: (model) => {
+      if (viewerRef.current && !viewerRef.current.isDestroyed() && model.file_url) {
+        const position = window.Cesium.Cartesian3.fromDegrees(
+          model.longitude,
+          model.latitude,
+          model.height || 0
+        );
+
+        const heading = window.Cesium.Math.toRadians(model.rotation.y);
+        const pitch = window.Cesium.Math.toRadians(model.rotation.x);
+        const roll = window.Cesium.Math.toRadians(model.rotation.z);
+        const orientation = window.Cesium.Transforms.headingPitchRollQuaternion(
+          position,
+          new window.Cesium.HeadingPitchRoll(heading, pitch, roll)
+        );
+
+        const entity = viewerRef.current.entities.add({
+          position: position,
+          orientation: orientation,
+          model: {
+            uri: model.file_url,
+            scale: new window.Cesium.Cartesian3(
+              model.scale.x,
+              model.scale.y,
+              model.scale.z
+            ),
+          },
+        });
+        console.log('Added 3D model to the scene:', entity);
+      }
+    },
   }));
 
   const terminateShape = () => {
@@ -198,8 +229,16 @@ const CesiumViewer = forwardRef(({
         if (!viewer || viewer.isDestroyed()) return;
         
         viewer.scene.primitives.add(osmBuildings);
-        osmBuildings.style = new window.Cesium.Cesium3DTileStyle({ 
-          color: "color('rgba(200, 200, 200, 0.8)')" 
+        osmBuildings.style = new window.Cesium.Cesium3DTileStyle({
+          color: {
+            conditions: [
+              ['${height} >= 100', 'color("#FFC107")'],
+              ['${height} >= 50', 'color("#FF9800")'],
+              ['${height} >= 25', 'color("#FF5722")'],
+              ['${height} >= 10', 'color("#F44336")'],
+              ['true', 'color("#BDBDBD")']
+            ]
+          }
         });
         
         if (!viewer || viewer.isDestroyed()) return;
