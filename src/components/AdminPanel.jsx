@@ -70,6 +70,15 @@ const AdminPanel = ({ onToggle, onWidgetVisibilityChange, widgetVisibility }) =>
               />
               <span>🏗️ לוח תוכניות</span>
             </label>
+            
+            <label className="widget-checkbox">
+              <input
+                type="checkbox"
+                checked={widgetVisibility.publicAllocation}
+                onChange={(e) => handleWidgetToggle('publicAllocation', e.target.checked)}
+              />
+              <span>🏛️ הקצאת ציבור</span>
+            </label>
           </div>
         </div>
       </div>

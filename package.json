@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.52.1",
     "framer-motion": "^12.23.9",
     "http-server": "^14.1.1",
+    "lucide-react": "^0.526.0",
     "recharts": "^3.1.0"
   },
   "devDependencies": {

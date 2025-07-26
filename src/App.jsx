@@ -8,6 +8,7 @@ import AdminPanel from './components/AdminPanel';
 import ObjectPlacer from './components/ObjectPlacer';
 import { UrbanPlansDashboard } from './components/UrbanPlansDashboard';
 import TestPlanData from './components/TestPlanData';
+import PublicAllocationDashboard from './components/PublicAllocationDashboard';
 import { buildingService } from './services/supabase';
 import './App.css';
 
@@ -39,13 +40,15 @@ function App() {
   const [widgetVisibility, setWidgetVisibility] = useState({
     objectPlacer: false,
     layerSwitcher: false,
-    plansDashboard: false
+    plansDashboard: false,
+    publicAllocation: false
   });
 
   // Plans Dashboard state
   const [showPlansDashboard, setShowPlansDashboard] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
   const [showTestData, setShowTestData] = useState(false);
+  const [showPublicAllocation, setShowPublicAllocation] = useState(false);
 
   const handleWidgetVisibilityChange = (widgetName, isVisible) => {
     setWidgetVisibility(prev => ({
@@ -63,6 +66,9 @@ function App() {
         break;
       case 'plansDashboard':
         setShowPlansDashboard(isVisible);
+        break;
+      case 'publicAllocation':
+        setShowPublicAllocation(isVisible);
         break;
     }
   };
@@ -1173,6 +1179,15 @@ function App() {
             🧪 בדיקת נתונים
           </button>
         )}
+        {!showPublicAllocation && widgetVisibility.publicAllocation && (
+          <button 
+            className="window-menu-btn public-allocation"
+            onClick={() => setShowPublicAllocation(true)}
+            style={{ background: 'rgba(255, 87, 34, 0.8)' }}
+          >
+            🏛️ הקצאת ציבור
+          </button>
+        )}
       </div>
       
       {/* Test Data Component */}
@@ -1206,6 +1221,40 @@ function App() {
             ✕ סגור
           </button>
           <TestPlanData />
+        </div>
+      )}
+      
+      {/* Public Allocation Dashboard */}
+      {showPublicAllocation && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'white',
+          zIndex: 2000,
+          overflow: 'auto'
+        }}>
+          <button
+            onClick={() => setShowPublicAllocation(false)}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              zIndex: 2001,
+              padding: '10px 15px',
+              backgroundColor: '#f44336',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            ✕ סגור
+          </button>
+          <PublicAllocationDashboard />
         </div>
       )}
     </>
