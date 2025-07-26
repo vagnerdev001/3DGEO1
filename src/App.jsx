@@ -56,6 +56,7 @@ function App() {
   };
 
   const handleCreateBuilding = async (viewerPoints) => {
+  }
   const handleCreateBuilding = async (viewerPoints) => {
     console.log('🏗️ CREATE BUILDING CLICKED');
     const pointsToUse = activeShapePoints.length > 0 ? activeShapePoints : viewerPoints;
