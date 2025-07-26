@@ -4,7 +4,6 @@ import { BuildingPlan, Project, PlanMetrics, PlanLandUse, PlanBuilding } from '.
 export class PlanService {
   // Projects
   async getProjects(): Promise<{ success: boolean; data?: Project[]; error?: string }> {
-  async getProjects(): Promise<ServiceResponse<Project[]>> {
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -16,38 +15,7 @@ export class PlanService {
       return { success: true, data: data || [] };
     } catch (error) {
       console.error('Error getting projects:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async createProject(projectData: Partial<Project>): Promise<ServiceResponse<Project>> {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert([projectData])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return { success: true, data };
-    } catch (error) {
-      console.error('Error creating project:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return { success: true, data };
-    } catch (error) {
-      console.error('Error getting projects:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error?.message || 'Unknown error' };
     }
   }
 
@@ -60,10 +28,11 @@ export class PlanService {
         .single();
 
       if (error) throw error;
+
       return { success: true, data };
     } catch (error) {
       console.error('Error creating project:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error?.message || 'Unknown error' };
     }
   }
 
