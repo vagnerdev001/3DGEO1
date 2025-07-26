@@ -27,6 +27,7 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
     height: '',
     ai_command: '',
     floor_colors: [],
+    geometry_points: [],
     transparency: 0.9,
     הערכת_מחיר_שמאי: '',
     ערך_משוער_לפי_מאפייני_סביבה: '',
@@ -52,6 +53,9 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         Object.keys(formData).forEach(key => {
           if (key === 'floor_colors') {
             // Ensure floor_colors is always an array
+            sanitizedData[key] = Array.isArray(result.data[key]) ? result.data[key] : [];
+          } else if (key === 'geometry_points') {
+            // Ensure geometry_points is always an array
             sanitizedData[key] = Array.isArray(result.data[key]) ? result.data[key] : [];
           } else if (key === 'transparency') {
             // Keep transparency as UI-only field with default value
@@ -183,7 +187,7 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
       const result = await buildingService.saveBuilding(
         buildingId, 
         formData, 
-        null, // Don't overwrite geometry_points from form
+        formData.geometry_points, // Use geometry_points from form data
         formData.ai_command, 
         parseFloat(formData.height) || 0,
         formData.floor_colors
