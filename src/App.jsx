@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import CesiumViewer from './components/CesiumViewer';
 import AIControls from './components/AIControls';
 import DataFormModal from './components/DataFormModal';
-import { initializeFirebase } from './services/firebase';
+import { buildingService } from './services/supabase';
 import './App.css';
 
 function App() {
@@ -14,10 +14,6 @@ function App() {
   const [showDataForm, setShowDataForm] = useState(false);
   const [aiCommand, setAiCommand] = useState('');
   const viewerRef = useRef(null);
-
-  useEffect(() => {
-    initializeFirebase();
-  }, []);
 
   const handleDrawingStateChange = (drawing, points, building, buildingId, message) => {
     setIsDrawing(drawing);
@@ -70,6 +66,20 @@ function App() {
         setExtrudedBuilding(building);
         setCurrentBuildingId(buildingId);
         setStatusMessage(`Building created with height: ${height}m.`);
+        
+        // Save building geometry and AI command to database
+        await buildingService.saveBuilding(
+          buildingId, 
+          {}, // Empty data object, will be filled in modal
+          activeShapePoints.map(point => ({
+            longitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).longitude),
+            latitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).latitude),
+            height: window.Cesium.Cartographic.fromCartesian(point).height
+          })),
+          aiCommand,
+          height
+        );
+        
         setShowDataForm(true);
         setActiveShapePoints([]);
       } else {

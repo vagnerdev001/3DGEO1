@@ -5,7 +5,7 @@ import './DataFormModal.css';
 const DataFormModal = ({ isOpen, onClose, buildingId }) => {
   const [formData, setFormData] = useState({
     wkt: '',
-    full_addres_Q: '',
+    full_addres_q: '',
     street_cod: '',
     bldg_num: '',
     bldg_type: '',
@@ -23,7 +23,9 @@ const DataFormModal = ({ isOpen, onClose, buildingId }) => {
     color_sofi: '',
     full_addresse: '',
     mi_address: '',
-    codeapp: ''
+    codeapp: '',
+    height: '',
+    ai_command: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -58,7 +60,13 @@ const DataFormModal = ({ isOpen, onClose, buildingId }) => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const result = await buildingService.saveBuilding(buildingId, formData);
+      const result = await buildingService.saveBuilding(
+        buildingId, 
+        formData, 
+        formData.geometry_points, 
+        formData.ai_command, 
+        parseFloat(formData.height) || 0
+      );
       if (result.success) {
         onClose();
       } else {
@@ -78,7 +86,7 @@ const DataFormModal = ({ isOpen, onClose, buildingId }) => {
         <form id="building-data-form">
           <div className="form-grid">
             <div><label htmlFor="wkt">WKT</label><input type="text" id="wkt" name="wkt" value={formData.wkt} onChange={handleInputChange} /></div>
-            <div><label htmlFor="full_addres_Q">full_addres_Q</label><input type="text" id="full_addres_Q" name="full_addres_Q" value={formData.full_addres_Q} onChange={handleInputChange} /></div>
+            <div><label htmlFor="full_addres_q">Full Address</label><input type="text" id="full_addres_q" name="full_addres_q" value={formData.full_addres_q} onChange={handleInputChange} /></div>
             <div><label htmlFor="street_cod">street_cod</label><input type="text" id="street_cod" name="street_cod" value={formData.street_cod} onChange={handleInputChange} /></div>
             <div><label htmlFor="bldg_num">bldg_num</label><input type="text" id="bldg_num" name="bldg_num" value={formData.bldg_num} onChange={handleInputChange} /></div>
             <div><label htmlFor="bldg_type">bldg_type</label><input type="text" id="bldg_type" name="bldg_type" value={formData.bldg_type} onChange={handleInputChange} /></div>
@@ -97,6 +105,8 @@ const DataFormModal = ({ isOpen, onClose, buildingId }) => {
             <div><label htmlFor="full_addresse">full_addresse</label><input type="text" id="full_addresse" name="full_addresse" value={formData.full_addresse} onChange={handleInputChange} /></div>
             <div><label htmlFor="mi_address">mi_address</label><input type="text" id="mi_address" name="mi_address" value={formData.mi_address} onChange={handleInputChange} /></div>
             <div><label htmlFor="codeapp">codeapp</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
+            <div><label htmlFor="height">Height (m)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
+            <div><label htmlFor="ai_command">AI Command</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
           </div>
         </form>
       </div>

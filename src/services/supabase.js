@@ -8,13 +8,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Building data operations
 export const buildingService = {
   // Save building data
-  async saveBuilding(buildingId, data) {
+  async saveBuilding(buildingId, data, geometryPoints = null, aiCommand = '', height = 0) {
     try {
       const { error } = await supabase
         .from('buildings')
         .upsert({
           id: buildingId,
           ...data,
+          geometry_points: geometryPoints,
+          ai_command: aiCommand,
+          height: height,
           updated_at: new Date().toISOString()
         });
 
