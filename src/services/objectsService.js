@@ -207,16 +207,25 @@ export const objectsService = {
   // File Upload (for future use with Supabase Storage)
   async uploadModel(file, fileName) {
     try {
+      // Generate unique filename to prevent conflicts
+      const timestamp = Date.now();
+      const extension = fileName.split('.').pop();
+      const baseName = fileName.replace(/\.[^/.]+$/, "");
+      const uniqueFileName = `${timestamp}_${baseName}.${extension}`;
+      
       const { data, error } = await supabase.storage
         .from('3d-models')
-        .upload(`models/${fileName}`, file);
+        .upload(`models/${uniqueFileName}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (error) throw error;
       
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('3d-models')
-        .getPublicUrl(`models/${fileName}`);
+        .getPublicUrl(`models/${uniqueFileName}`);
 
       return { success: true, data: { ...data, publicUrl: urlData.publicUrl } };
     } catch (error) {
@@ -227,20 +236,84 @@ export const objectsService = {
 
   async uploadThumbnail(file, fileName) {
     try {
+      // Generate unique filename to prevent conflicts
+      const timestamp = Date.now();
+      const extension = fileName.split('.').pop();
+      const baseName = fileName.replace(/\.[^/.]+$/, "");
+      const uniqueFileName = `${timestamp}_${baseName}.${extension}`;
+      
       const { data, error } = await supabase.storage
         .from('thumbnails')
-        .upload(`thumbnails/${fileName}`, file);
+        .upload(`thumbnails/${uniqueFileName}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (error) throw error;
       
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('thumbnails')
-        .getPublicUrl(`thumbnails/${fileName}`);
+        .getPublicUrl(`thumbnails/${uniqueFileName}`);
 
       return { success: true, data: { ...data, publicUrl: urlData.publicUrl } };
     } catch (error) {
       console.error('Error uploading thumbnail:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Storage management functions
+  async getStorageStats() {
+    try {
+      const { data, error } = await supabase.rpc('get_storage_stats');
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error getting storage stats:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async cleanupOrphanedFiles() {
+    try {
+      const { data, error } = await supabase.rpc('cleanup_orphaned_model_files');
+      if (error) throw error;
+      return { success: true, data: { cleanedFiles: data } };
+    } catch (error) {
+      console.error('Error cleaning up orphaned files:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async deleteModelFile(fileUrl) {
+    try {
+      // Extract filename from URL
+      const fileName = fileUrl.split('/').pop();
+      const { error } = await supabase.storage
+        .from('3d-models')
+        .remove([`models/${fileName}`]);
+      
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting model file:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async deleteThumbnailFile(thumbnailUrl) {
+    try {
+      // Extract filename from URL
+      const fileName = thumbnailUrl.split('/').pop();
+      const { error } = await supabase.storage
+        .from('thumbnails')
+        .remove([`thumbnails/${fileName}`]);
+      
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting thumbnail file:', error);
       return { success: false, error: error.message };
     }
   }
