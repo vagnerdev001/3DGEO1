@@ -202,7 +202,7 @@ function App() {
     console.log('🏢 Building clicked:', buildingEntity.id);
     
     // Set popup position - use default if not provided
-    setPopupPosition({ x: 200, y: 200 });
+    setPopupPosition({ x: window.innerWidth - 350, y: 50 });
     
     // Find the building data from savedBuildings
     const buildingData = savedBuildings.find(b => b.id === buildingEntity.id);
