@@ -93,6 +93,50 @@ const PublicAllocationDashboard: React.FC = () => {
           await createPublicAllocationPlans(currentProjectId);
         }
 
+        // First, get or create a project for public allocation
+        let { data: projects, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('name', 'Public Allocation Tel Aviv')
+          .limit(1);
+
+        if (projectError) throw projectError;
+
+        let currentProjectId: string;
+
+        if (!projects || projects.length === 0) {
+          // Create a new project for public allocation
+          const { data: newProject, error: createError } = await supabase
+            .from('projects')
+            .insert({
+              name: 'Public Allocation Tel Aviv',
+              description: 'הקצאת שטחים למבני ציבור - מרכז תעשייה תל אביב',
+              city: 'Tel Aviv'
+            })
+            .select()
+            .single();
+
+          if (createError) throw createError;
+          currentProjectId = newProject.id;
+        } else {
+          currentProjectId = projects[0].id;
+        }
+
+        setProjectId(currentProjectId);
+
+        // Check if we already have public allocation plans
+        const { data: existingPlans, error: plansError } = await supabase
+          .from('building_plans')
+          .select('*')
+          .eq('project_id', currentProjectId);
+
+        if (plansError) throw plansError;
+
+        if (!existingPlans || existingPlans.length === 0) {
+          // Create sample public allocation plans
+          await createPublicAllocationPlans(currentProjectId);
+        }
+
         // Fetch all plans
         await fetchPlans(currentProjectId);
       } catch (error) {
@@ -104,6 +148,171 @@ const PublicAllocationDashboard: React.FC = () => {
 
     initializeData();
   }, []);
+
+  const createPublicAllocationPlans = async (projectId: string) => {
+    try {
+      // Create sample public allocation plans
+      const samplePlans = [
+        {
+          project_id: projectId,
+          plan_name: 'תוכנית הקצאה בסיסית - מרכז תעשייה',
+          plan_type: 'baseline',
+          status: 'approved',
+          description: 'הקצאת שטחים בסיסית למבני ציבור במרכז התעשייה',
+          version: 1
+        },
+        {
+          project_id: projectId,
+          plan_name: 'תוכנית הקצאה מורחבת - שירותי ציבור',
+          plan_type: 'alternative',
+          status: 'review',
+          description: 'הרחבת שטחי ציבור עם דגש על שירותים קהילתיים',
+          version: 1
+        },
+        {
+          project_id: projectId,
+          plan_name: 'תוכנית הקצאה כלכלית - מקסום הכנסות',
+          plan_type: 'proposed',
+          status: 'draft',
+          description: 'תוכנית ממוקדת הכנסות עם איזון בין ציבורי למסחרי',
+          version: 1
+        }
+      ];
+
+      const { data: createdPlans, error: plansError } = await supabase
+        .from('building_plans')
+        .upsert(samplePlans, { 
+          onConflict: 'project_id,plan_name,version' 
+        })
+        .select();
+
+      if (plansError) throw plansError;
+
+      // Create sample metrics and land use for each plan
+      for (const plan of createdPlans) {
+        await createPublicAllocationMetrics(plan.id, plan.plan_type);
+        await createPublicAllocationLandUse(plan.id, plan.plan_type);
+        await createRevenueProjections(plan.id, plan.plan_name);
+      }
+
+      console.log('✅ Public allocation plans created successfully!');
+    } catch (error) {
+      console.error('Error creating public allocation plans:', error);
+    }
+  };
+
+  const createPublicAllocationMetrics = async (planId: string, planType: string) => {
+    const metricsData = {
+      baseline: [
+        { metric_type: 'far', metric_value: 1.8, unit: 'ratio' },
+        { metric_type: 'employment', metric_value: 2500, unit: 'jobs' },
+        { metric_type: 'revenue_annual', metric_value: 45, unit: 'M ILS' },
+        { metric_type: 'public_services', metric_value: 35, unit: 'percentage' }
+      ],
+      alternative: [
+        { metric_type: 'far', metric_value: 2.2, unit: 'ratio' },
+        { metric_type: 'employment', metric_value: 3200, unit: 'jobs' },
+        { metric_type: 'revenue_annual', metric_value: 62, unit: 'M ILS' },
+        { metric_type: 'public_services', metric_value: 45, unit: 'percentage' }
+      ],
+      proposed: [
+        { metric_type: 'far', metric_value: 2.0, unit: 'ratio' },
+        { metric_type: 'employment', metric_value: 2800, unit: 'jobs' },
+        { metric_type: 'revenue_annual', metric_value: 58, unit: 'M ILS' },
+        { metric_type: 'public_services', metric_value: 40, unit: 'percentage' }
+      ]
+    };
+
+    const metrics = metricsData[planType as keyof typeof metricsData] || metricsData.baseline;
+    
+    const metricsToInsert = metrics.map(metric => ({
+      plan_id: planId,
+      ...metric
+    }));
+
+    const { error } = await supabase
+      .from('plan_metrics')
+      .upsert(metricsToInsert, { onConflict: 'plan_id,metric_type,category' });
+
+    if (error) throw error;
+  };
+
+  const createPublicAllocationLandUse = async (planId: string, planType: string) => {
+    const landUseData = {
+      baseline: [
+        { land_use_type: 'public', area_sqm: 8000, percentage: 40, color_hex: '#F44336' },
+        { land_use_type: 'commercial', area_sqm: 6000, percentage: 30, color_hex: '#2196F3' },
+        { land_use_type: 'industrial', area_sqm: 4000, percentage: 20, color_hex: '#FF9800' },
+        { land_use_type: 'open_space', area_sqm: 1500, percentage: 7.5, color_hex: '#8BC34A' },
+        { land_use_type: 'parking', area_sqm: 500, percentage: 2.5, color_hex: '#607D8B' }
+      ],
+      alternative: [
+        { land_use_type: 'public', area_sqm: 10000, percentage: 50, color_hex: '#F44336' },
+        { land_use_type: 'commercial', area_sqm: 5000, percentage: 25, color_hex: '#2196F3' },
+        { land_use_type: 'industrial', area_sqm: 3000, percentage: 15, color_hex: '#FF9800' },
+        { land_use_type: 'open_space', area_sqm: 1500, percentage: 7.5, color_hex: '#8BC34A' },
+        { land_use_type: 'parking', area_sqm: 500, percentage: 2.5, color_hex: '#607D8B' }
+      ],
+      proposed: [
+        { land_use_type: 'public', area_sqm: 9000, percentage: 45, color_hex: '#F44336' },
+        { land_use_type: 'commercial', area_sqm: 5500, percentage: 27.5, color_hex: '#2196F3' },
+        { land_use_type: 'industrial', area_sqm: 3500, percentage: 17.5, color_hex: '#FF9800' },
+        { land_use_type: 'open_space', area_sqm: 1500, percentage: 7.5, color_hex: '#8BC34A' },
+        { land_use_type: 'parking', area_sqm: 500, percentage: 2.5, color_hex: '#607D8B' }
+      ]
+    };
+
+    const landUse = landUseData[planType as keyof typeof landUseData] || landUseData.baseline;
+    
+    const landUseToInsert = landUse.map(use => ({
+      plan_id: planId,
+      ...use
+    }));
+
+    const { error } = await supabase
+      .from('plan_land_use')
+      .upsert(landUseToInsert, { onConflict: 'plan_id,land_use_type' });
+
+    if (error) throw error;
+  };
+
+  const createRevenueProjections = async (planId: string, planName: string) => {
+    const revenueData = [];
+    const sources = [
+      { name: 'ארנונה מסחרית', base: 8000000, type: 'הכנסה' },
+      { name: 'שכירות משרדים', base: 12000000, type: 'הכנסה' },
+      { name: 'חניות ציבוריות', base: 2500000, type: 'הכנסה' },
+      { name: 'אחזקת מבנים', base: -3000000, type: 'הוצאה' },
+      { name: 'שירותי ניקיון', base: -1500000, type: 'הוצאה' },
+      { name: 'אבטחה', base: -2000000, type: 'הוצאה' }
+    ];
+
+    for (let year = 2024; year <= 2033; year++) {
+      sources.forEach(source => {
+        const growth = source.type === 'הכנסה' ? 1.03 : 1.02; // 3% growth for income, 2% for expenses
+        const yearMultiplier = Math.pow(growth, year - 2024);
+        
+        revenueData.push({
+          plan_name: planName,
+          building_name: 'מרכז תעשייה',
+          revenue_source: source.name,
+          annual_revenue: Math.round(source.base * yearMultiplier),
+          projection_year: year,
+          revenue_type: source.type === 'הכנסה' ? 'income' : 'expense',
+          revenue_direction: source.type
+        });
+      });
+    }
+
+    // Insert revenue projections data
+    const { error } = await supabase
+      .from('revenue_summary_10_year')
+      .upsert(revenueData, { onConflict: 'plan_name,revenue_source,projection_year' });
+    
+    if (error) {
+      throw error;
+    }
+  };
 
   const createPublicAllocationPlans = async (projectId: string) => {
     try {
