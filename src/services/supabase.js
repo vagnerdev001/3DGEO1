@@ -41,7 +41,7 @@ export const buildingService = {
         ...validFields,
         geometry_points: geometryPoints,
         ai_command: aiCommand,
-        height: height,
+        height: parseFloat(height) || 0,
         floor_colors: floorColors,
         updated_at: new Date().toISOString()
       };

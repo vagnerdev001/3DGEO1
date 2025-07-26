@@ -247,15 +247,19 @@ function App() {
         }));
         
         // Generate default floor colors
-        const defaultFloorColors = generateFloorColors(floors, 0.9).map(color => 
-          `#${Math.round(color.red * 255).toString(16).padStart(2, '0')}${Math.round(color.green * 255).toString(16).padStart(2, '0')}${Math.round(color.blue * 255).toString(16).padStart(2, '0')}`
-        );
+        const defaultFloorColors = generateFloorColors(floors, 1.0).map(color => {
+          const r = Math.round(color.red * 255).toString(16).padStart(2, '0');
+          const g = Math.round(color.green * 255).toString(16).padStart(2, '0');
+          const b = Math.round(color.blue * 255).toString(16).padStart(2, '0');
+          return `#${r}${g}${b}`;
+        });
         
         const saveResult = await buildingService.saveBuilding(
           buildingId, 
           {
             num_floors: floors.toString(),
-            ai_command: aiCommand
+            ai_command: aiCommand,
+            height: height.toString()
           },
           geometryPoints,
           aiCommand,

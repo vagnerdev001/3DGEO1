@@ -180,20 +180,17 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Get the current transparency value
-      const currentTransparency = parseFloat(formData.transparency) || 0.9;
-      
       const result = await buildingService.saveBuilding(
         buildingId, 
         formData, 
-        formData.geometry_points, 
+        null, // Don't overwrite geometry_points from form
         formData.ai_command, 
         parseFloat(formData.height) || 0,
         formData.floor_colors
       );
       if (result.success) {
-        // Trigger building refresh with new transparency
-        onSave && onSave('נתוני הבניין נשמרו בהצלחה!', true, currentTransparency);
+        // Trigger building refresh
+        onSave && onSave('נתוני הבניין נשמרו בהצלחה!', true, parseFloat(formData.transparency) || 0.9);
         onClose();
       } else {
         console.error('Error saving building:', result.error);
