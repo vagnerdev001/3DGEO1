@@ -837,9 +837,9 @@ function App() {
         isDrawing={isDrawing}
         activeShapePoints={activeShapePoints}
         currentLayer={currentLayer}
+        isPlacingObject={isPlacingObject}
         onDrawingStateChange={handleDrawingStateChange}
         onBuildingClick={handleBuildingClick}
-        isPlacingObject={isPlacingObject}
         onObjectPositionSelect={handleObjectPositionSelect}
       />
       <AIControls
