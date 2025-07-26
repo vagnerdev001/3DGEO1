@@ -4,23 +4,13 @@ import { supabase } from '../services/supabase';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Building2, TrendingUp, TrendingDown, DollarSign, Users, Calendar } from 'lucide-react';
 
-interface PublicPlan {
+interface Plan {
   id: string;
   plan_name: string;
   plan_type: string;
   status: string;
   description: string;
   created_date: string;
-}
-
-interface RevenueProjection {
-  plan_id: string;
-  building_name: string;
-  revenue_source: string;
-  annual_revenue: number;
-  projection_year: number;
-  revenue_type: string;
-  revenue_direction: string;
 }
 
 interface PlanMetric {
@@ -36,12 +26,22 @@ interface LandUse {
   color_hex: string;
 }
 
+interface RevenueProjection {
+  plan_name: string;
+  building_name: string;
+  revenue_source: string;
+  annual_revenue: number;
+  projection_year: number;
+  revenue_type: string;
+  revenue_direction: string;
+}
+
 const PublicAllocationDashboard: React.FC = () => {
-  const [plans, setPlans] = useState<PublicPlan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<PublicPlan | null>(null);
-  const [revenues, setRevenues] = useState<RevenueProjection[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [metrics, setMetrics] = useState<PlanMetric[]>([]);
   const [landUse, setLandUse] = useState<LandUse[]>([]);
+  const [revenues, setRevenues] = useState<RevenueProjection[]>([]);
   const [loading, setLoading] = useState(true);
   const [projectId, setProjectId] = useState<string | null>(null);
 
@@ -49,11 +49,11 @@ const PublicAllocationDashboard: React.FC = () => {
   useEffect(() => {
     const initializeData = async () => {
       try {
-        // First, get or create a project for public allocation
+        // First, get or create a project
         let { data: projects, error: projectError } = await supabase
           .from('projects')
           .select('*')
-          .eq('name', 'Public Allocation Tel Aviv')
+          .eq('name', 'הקצאת ציבור תל אביב')
           .limit(1);
 
         if (projectError) throw projectError;
@@ -61,12 +61,12 @@ const PublicAllocationDashboard: React.FC = () => {
         let currentProjectId: string;
 
         if (!projects || projects.length === 0) {
-          // Create a new project for public allocation
+          // Create a new project
           const { data: newProject, error: createError } = await supabase
             .from('projects')
             .insert({
-              name: 'Public Allocation Tel Aviv',
-              description: 'הקצאת שטחים למבני ציבור - מרכז תעשייה תל אביב',
+              name: 'הקצאת ציבור תל אביב',
+              description: 'פרויקט הקצאת שטחים למבני ציבור במרכז תל אביב',
               city: 'Tel Aviv'
             })
             .select()
@@ -80,7 +80,7 @@ const PublicAllocationDashboard: React.FC = () => {
 
         setProjectId(currentProjectId);
 
-        // Check if we already have public allocation plans
+        // Check if we already have plans
         const { data: existingPlans, error: plansError } = await supabase
           .from('building_plans')
           .select('*')
@@ -89,14 +89,14 @@ const PublicAllocationDashboard: React.FC = () => {
         if (plansError) throw plansError;
 
         if (!existingPlans || existingPlans.length === 0) {
-          // Create sample public allocation plans
-          await createPublicAllocationPlans(currentProjectId);
+          // Create sample plans
+          await createSamplePlans(currentProjectId);
         }
 
         // Fetch all plans
         await fetchPlans(currentProjectId);
       } catch (error) {
-        console.error('Error initializing public allocation data:', error);
+        console.error('Error initializing data:', error);
       } finally {
         setLoading(false);
       }
@@ -105,21 +105,21 @@ const PublicAllocationDashboard: React.FC = () => {
     initializeData();
   }, []);
 
-  const createPublicAllocationPlans = async (projectId: string) => {
+  const createSamplePlans = async (projectId: string) => {
     try {
-      // Create sample public allocation plans
+      // Create sample building plans for public allocation
       const samplePlans = [
         {
           project_id: projectId,
-          plan_name: 'תוכנית הקצאה בסיסית - מרכז תעשייה',
+          plan_name: 'תוכנית הקצאה בסיסית - מרכז ציבורי',
           plan_type: 'baseline',
           status: 'approved',
-          description: 'הקצאת שטחים בסיסית למבני ציבור במרכז התעשייה',
+          description: 'תוכנית הקצאה בסיסית למבני ציבור במרכז העיר',
           version: 1
         },
         {
           project_id: projectId,
-          plan_name: 'תוכנית הקצאה מורחבת - שירותי ציבור',
+          plan_name: 'תוכנית הקצאה מורחבת - שירותי קהילה',
           plan_type: 'alternative',
           status: 'review',
           description: 'הרחבת שטחי ציבור עם דגש על שירותים קהילתיים',
@@ -127,10 +127,18 @@ const PublicAllocationDashboard: React.FC = () => {
         },
         {
           project_id: projectId,
-          plan_name: 'תוכנית הקצאה כלכלית - מקסום הכנסות',
-          plan_type: 'proposed',
+          plan_name: 'תוכנית הקצאה כלכלית - איזון הכנסות',
+          plan_type: 'alternative',
           status: 'draft',
-          description: 'תוכנית ממוקדת הכנסות עם איזון בין ציבורי למסחרי',
+          description: 'תוכנית ממוקדת איזון בין צרכי ציבור להכנסות עירוניות',
+          version: 1
+        },
+        {
+          project_id: projectId,
+          plan_name: 'תוכנית הקצאה מוצעת - פתרון היברידי',
+          plan_type: 'proposed',
+          status: 'review',
+          description: 'שילוב של כל התוכניות עם דגש על קיימות כלכלית',
           version: 1
         }
       ];
@@ -144,38 +152,52 @@ const PublicAllocationDashboard: React.FC = () => {
 
       if (plansError) throw plansError;
 
-      // Create sample metrics and land use for each plan
+      // Create sample metrics for each plan
       for (const plan of createdPlans) {
-        await createPublicAllocationMetrics(plan.id, plan.plan_type);
-        await createPublicAllocationLandUse(plan.id, plan.plan_type);
-        await createRevenueProjections(plan.id, plan.plan_name);
+        await createSampleMetrics(plan.id, plan.plan_type);
+        await createSampleLandUse(plan.id, plan.plan_type);
+        await createSampleRevenues(plan.plan_name, plan.plan_type);
       }
 
-      console.log('✅ Public allocation plans created successfully!');
+      console.log('✅ Sample public allocation plans created successfully!');
     } catch (error) {
-      console.error('Error creating public allocation plans:', error);
+      console.error('Error creating sample plans:', error);
     }
   };
 
-  const createPublicAllocationMetrics = async (planId: string, planType: string) => {
+  const createSampleMetrics = async (planId: string, planType: string) => {
+    // Different metrics based on plan type for public allocation
     const metricsData = {
       baseline: [
         { metric_type: 'far', metric_value: 1.8, unit: 'ratio' },
         { metric_type: 'employment', metric_value: 2500, unit: 'jobs' },
-        { metric_type: 'revenue_annual', metric_value: 45, unit: 'M ILS' },
+        { metric_type: 'units_total', metric_value: 180, unit: 'units' },
+        { metric_type: 'height_avg', metric_value: 25, unit: 'meters' },
+        { metric_type: 'coverage', metric_value: 40, unit: 'percentage' },
         { metric_type: 'public_services', metric_value: 35, unit: 'percentage' }
       ],
-      alternative: [
+      alternative: planType === 'alternative' ? [
         { metric_type: 'far', metric_value: 2.2, unit: 'ratio' },
         { metric_type: 'employment', metric_value: 3200, unit: 'jobs' },
-        { metric_type: 'revenue_annual', metric_value: 62, unit: 'M ILS' },
+        { metric_type: 'units_total', metric_value: 220, unit: 'units' },
+        { metric_type: 'height_avg', metric_value: 32, unit: 'meters' },
+        { metric_type: 'coverage', metric_value: 35, unit: 'percentage' },
         { metric_type: 'public_services', metric_value: 45, unit: 'percentage' }
-      ],
-      proposed: [
+      ] : [
         { metric_type: 'far', metric_value: 2.0, unit: 'ratio' },
         { metric_type: 'employment', metric_value: 2800, unit: 'jobs' },
-        { metric_type: 'revenue_annual', metric_value: 58, unit: 'M ILS' },
+        { metric_type: 'units_total', metric_value: 200, unit: 'units' },
+        { metric_type: 'height_avg', metric_value: 28, unit: 'meters' },
+        { metric_type: 'coverage', metric_value: 38, unit: 'percentage' },
         { metric_type: 'public_services', metric_value: 40, unit: 'percentage' }
+      ],
+      proposed: [
+        { metric_type: 'far', metric_value: 2.1, unit: 'ratio' },
+        { metric_type: 'employment', metric_value: 2900, unit: 'jobs' },
+        { metric_type: 'units_total', metric_value: 210, unit: 'units' },
+        { metric_type: 'height_avg', metric_value: 30, unit: 'meters' },
+        { metric_type: 'coverage', metric_value: 37, unit: 'percentage' },
+        { metric_type: 'public_services', metric_value: 42, unit: 'percentage' }
       ]
     };
 
@@ -193,26 +215,32 @@ const PublicAllocationDashboard: React.FC = () => {
     if (error) throw error;
   };
 
-  const createPublicAllocationLandUse = async (planId: string, planType: string) => {
+  const createSampleLandUse = async (planId: string, planType: string) => {
     const landUseData = {
       baseline: [
         { land_use_type: 'public', area_sqm: 8000, percentage: 40, color_hex: '#F44336' },
         { land_use_type: 'commercial', area_sqm: 6000, percentage: 30, color_hex: '#2196F3' },
-        { land_use_type: 'industrial', area_sqm: 4000, percentage: 20, color_hex: '#FF9800' },
+        { land_use_type: 'residential', area_sqm: 4000, percentage: 20, color_hex: '#4CAF50' },
         { land_use_type: 'open_space', area_sqm: 1500, percentage: 7.5, color_hex: '#8BC34A' },
         { land_use_type: 'parking', area_sqm: 500, percentage: 2.5, color_hex: '#607D8B' }
       ],
-      alternative: [
+      alternative: planType === 'alternative' ? [
         { land_use_type: 'public', area_sqm: 10000, percentage: 50, color_hex: '#F44336' },
         { land_use_type: 'commercial', area_sqm: 5000, percentage: 25, color_hex: '#2196F3' },
-        { land_use_type: 'industrial', area_sqm: 3000, percentage: 15, color_hex: '#FF9800' },
+        { land_use_type: 'residential', area_sqm: 3000, percentage: 15, color_hex: '#4CAF50' },
+        { land_use_type: 'open_space', area_sqm: 1500, percentage: 7.5, color_hex: '#8BC34A' },
+        { land_use_type: 'parking', area_sqm: 500, percentage: 2.5, color_hex: '#607D8B' }
+      ] : [
+        { land_use_type: 'public', area_sqm: 9000, percentage: 45, color_hex: '#F44336' },
+        { land_use_type: 'commercial', area_sqm: 5500, percentage: 27.5, color_hex: '#2196F3' },
+        { land_use_type: 'residential', area_sqm: 3500, percentage: 17.5, color_hex: '#4CAF50' },
         { land_use_type: 'open_space', area_sqm: 1500, percentage: 7.5, color_hex: '#8BC34A' },
         { land_use_type: 'parking', area_sqm: 500, percentage: 2.5, color_hex: '#607D8B' }
       ],
       proposed: [
-        { land_use_type: 'public', area_sqm: 9000, percentage: 45, color_hex: '#F44336' },
-        { land_use_type: 'commercial', area_sqm: 5500, percentage: 27.5, color_hex: '#2196F3' },
-        { land_use_type: 'industrial', area_sqm: 3500, percentage: 17.5, color_hex: '#FF9800' },
+        { land_use_type: 'public', area_sqm: 8500, percentage: 42.5, color_hex: '#F44336' },
+        { land_use_type: 'commercial', area_sqm: 5800, percentage: 29, color_hex: '#2196F3' },
+        { land_use_type: 'residential', area_sqm: 3700, percentage: 18.5, color_hex: '#4CAF50' },
         { land_use_type: 'open_space', area_sqm: 1500, percentage: 7.5, color_hex: '#8BC34A' },
         { land_use_type: 'parking', area_sqm: 500, percentage: 2.5, color_hex: '#607D8B' }
       ]
@@ -232,16 +260,38 @@ const PublicAllocationDashboard: React.FC = () => {
     if (error) throw error;
   };
 
-  const createRevenueProjections = async (planId: string, planName: string) => {
+  const createSampleRevenues = async (planName: string, planType: string) => {
     const revenueData = [];
-    const sources = [
-      { name: 'ארנונה מסחרית', base: 8000000, type: 'הכנסה' },
-      { name: 'שכירות משרדים', base: 12000000, type: 'הכנסה' },
-      { name: 'חניות ציבוריות', base: 2500000, type: 'הכנסה' },
-      { name: 'אחזקת מבנים', base: -3000000, type: 'הוצאה' },
-      { name: 'שירותי ניקיון', base: -1500000, type: 'הוצאה' },
-      { name: 'אבטחה', base: -2000000, type: 'הוצאה' }
-    ];
+    
+    // Different revenue sources based on plan type
+    const revenueSources = {
+      baseline: [
+        { name: 'ארנונה ממבני ציבור', base: 8000000, type: 'הכנסה' },
+        { name: 'שכירות משרדי עירייה', base: 12000000, type: 'הכנסה' },
+        { name: 'חניות ציבוריות', base: 2500000, type: 'הכנסה' },
+        { name: 'אחזקת מבנים', base: -3000000, type: 'הוצאה' },
+        { name: 'שירותי ניקיון', base: -1500000, type: 'הוצאה' },
+        { name: 'אבטחה ושמירה', base: -2000000, type: 'הוצאה' }
+      ],
+      alternative: [
+        { name: 'ארנונה ממבני ציבור', base: 10000000, type: 'הכנסה' },
+        { name: 'שכירות משרדי עירייה', base: 15000000, type: 'הכנסה' },
+        { name: 'חניות ציבוריות', base: 3000000, type: 'הכנסה' },
+        { name: 'אחזקת מבנים', base: -4000000, type: 'הוצאה' },
+        { name: 'שירותי ניקיון', base: -2000000, type: 'הוצאה' },
+        { name: 'אבטחה ושמירה', base: -2500000, type: 'הוצאה' }
+      ],
+      proposed: [
+        { name: 'ארנונה ממבני ציבור', base: 9000000, type: 'הכנסה' },
+        { name: 'שכירות משרדי עירייה', base: 13500000, type: 'הכנסה' },
+        { name: 'חניות ציבוריות', base: 2800000, type: 'הכנסה' },
+        { name: 'אחזקת מבנים', base: -3500000, type: 'הוצאה' },
+        { name: 'שירותי ניקיון', base: -1800000, type: 'הוצאה' },
+        { name: 'אבטחה ושמירה', base: -2200000, type: 'הוצאה' }
+      ]
+    };
+
+    const sources = revenueSources[planType as keyof typeof revenueSources] || revenueSources.baseline;
 
     for (let year = 2024; year <= 2033; year++) {
       sources.forEach(source => {
@@ -250,7 +300,7 @@ const PublicAllocationDashboard: React.FC = () => {
         
         revenueData.push({
           plan_name: planName,
-          building_name: 'מרכז תעשייה',
+          building_name: 'מרכז ציבורי',
           revenue_source: source.name,
           annual_revenue: Math.round(source.base * yearMultiplier),
           projection_year: year,
@@ -266,11 +316,11 @@ const PublicAllocationDashboard: React.FC = () => {
       .upsert(revenueData, { onConflict: 'plan_name,revenue_source,projection_year' });
     
     if (error) {
-      throw error;
+      console.warn('Could not insert revenue data:', error);
     }
   };
 
-  // Fetch all public allocation plans
+  // Fetch all plans
   const fetchPlans = async (projectId: string) => {
     try {
       const { data, error } = await supabase
@@ -289,28 +339,12 @@ const PublicAllocationDashboard: React.FC = () => {
     }
   };
 
-  // Fetch revenue projections and plan details for selected plan
+  // Fetch metrics, land use, and revenues for selected plan
   useEffect(() => {
     if (!selectedPlan) return;
 
     const fetchPlanDetails = async () => {
       try {
-        // Try to fetch revenue projections
-        try {
-          const { data: revenueData, error: revenueError } = await supabase
-            .from('revenue_summary_10_year')
-            .select('*')
-            .eq('plan_name', selectedPlan.plan_name)
-            .order('projection_year');
-
-          if (!revenueError) {
-            setRevenues(revenueData || []);
-          }
-        } catch (error) {
-          console.warn('Revenue data not available:', error);
-          setRevenues([]);
-        }
-
         // Fetch metrics
         const { data: metricsData, error: metricsError } = await supabase
           .from('plan_metrics')
@@ -328,6 +362,22 @@ const PublicAllocationDashboard: React.FC = () => {
 
         if (landUseError) throw landUseError;
         setLandUse(landUseData || []);
+
+        // Try to fetch revenue projections
+        try {
+          const { data: revenueData, error: revenueError } = await supabase
+            .from('revenue_summary_10_year')
+            .select('*')
+            .eq('plan_name', selectedPlan.plan_name)
+            .order('projection_year');
+
+          if (!revenueError) {
+            setRevenues(revenueData || []);
+          }
+        } catch (error) {
+          console.warn('Revenue data not available:', error);
+          setRevenues([]);
+        }
       } catch (error) {
         console.error('Error fetching plan details:', error);
       }
@@ -381,14 +431,23 @@ const PublicAllocationDashboard: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="loading" style={{ textAlign: 'center', padding: '50px' }}>טוען תוכניות הקצאה...</div>;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px',
+        color: '#666'
+      }}>
+        🏛️ יוצר נתוני הקצאת ציבור...
+      </div>
+    );
   }
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', direction: 'rtl' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>
-        🏛️ הקצאת שטחים למבני ציבור - מרכז תעשייה תל אביב
-      </h1>
+      <h1>🏛️ הקצאת שטחים למבני ציבור - תל אביב</h1>
       
       {/* Plan Selector */}
       <div style={{ marginBottom: '30px' }}>
@@ -399,13 +458,12 @@ const PublicAllocationDashboard: React.FC = () => {
               key={plan.id}
               onClick={() => setSelectedPlan(plan)}
               style={{
-                border: selectedPlan?.id === plan.id ? '3px solid #FF5722' : '1px solid #ddd',
+                border: selectedPlan?.id === plan.id ? '3px solid #F44336' : '1px solid #ddd',
                 borderRadius: '8px',
                 padding: '15px',
                 cursor: 'pointer',
-                backgroundColor: selectedPlan?.id === plan.id ? '#fff3e0' : 'white',
-                transition: 'all 0.2s ease',
-                boxShadow: selectedPlan?.id === plan.id ? '0 4px 12px rgba(255,87,34,0.3)' : '0 2px 4px rgba(0,0,0,0.1)'
+                backgroundColor: selectedPlan?.id === plan.id ? '#ffebee' : 'white',
+                transition: 'all 0.2s ease'
               }}
             >
               <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{plan.plan_name}</h3>
@@ -414,10 +472,11 @@ const PublicAllocationDashboard: React.FC = () => {
                   padding: '4px 8px',
                   borderRadius: '4px',
                   fontSize: '12px',
-                  backgroundColor: plan.plan_type === 'baseline' ? '#4CAF50' : '#FF5722',
+                  backgroundColor: plan.plan_type === 'baseline' ? '#4CAF50' : 
+                                  plan.plan_type === 'proposed' ? '#9C27B0' : '#F44336',
                   color: 'white'
                 }}>
-                  {plan.plan_type === 'baseline' ? 'מצב קיים' : 'חלופה'}
+                  {plan.plan_type}
                 </span>
                 <span style={{
                   padding: '4px 8px',
@@ -427,10 +486,13 @@ const PublicAllocationDashboard: React.FC = () => {
                                   plan.status === 'review' ? '#FF9800' : '#9E9E9E',
                   color: 'white'
                 }}>
-                  {plan.status === 'approved' ? 'מאושר' : plan.status === 'review' ? 'בבדיקה' : 'טיוטה'}
+                  {plan.status}
                 </span>
               </div>
               <p style={{ margin: '0', fontSize: '14px', color: '#666' }}>{plan.description}</p>
+              <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#999' }}>
+                נוצר: {new Date(plan.created_date).toLocaleDateString('he-IL')}
+              </p>
             </div>
           ))}
         </div>
@@ -438,251 +500,226 @@ const PublicAllocationDashboard: React.FC = () => {
 
       {selectedPlan && (
         <>
-          {/* Key Performance Indicators */}
+          {/* Plan Metrics */}
           <div style={{ marginBottom: '30px' }}>
-            <h2>📊 מדדים עיקריים: {selectedPlan.plan_name}</h2>
+            <h2>📊 מדדי תוכנית: {selectedPlan.plan_name}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-              <div style={{ backgroundColor: '#e8f5e8', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '2px solid #4CAF50' }}>
-                <Building2 size={32} color="#4CAF50" style={{ marginBottom: '10px' }} />
-                <h4 style={{ margin: '0', color: '#2E7D32' }}>יחס בנייה</h4>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1B5E20' }}>
-                  {getMetricValue('far').toFixed(1)}
+              {metrics.map((metric) => (
+                <div
+                  key={metric.metric_type}
+                  style={{
+                    backgroundColor: '#f8f9fa',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    border: '1px solid #e9ecef'
+                  }}
+                >
+                  <h4 style={{ margin: '0 0 10px 0', textTransform: 'capitalize', color: '#495057' }}>
+                    {getMetricLabel(metric.metric_type)}
+                  </h4>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#212529' }}>
+                    {typeof metric.metric_value === 'number' ? metric.metric_value.toFixed(1) : metric.metric_value}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#6c757d', marginTop: '5px' }}>
+                    {metric.unit}
+                  </div>
                 </div>
-              </div>
-              
-              <div style={{ backgroundColor: '#e3f2fd', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '2px solid #2196F3' }}>
-                <Users size={32} color="#2196F3" style={{ marginBottom: '10px' }} />
-                <h4 style={{ margin: '0', color: '#1565C0' }}>תעסוקה</h4>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0D47A1' }}>
-                  {getMetricValue('employment').toLocaleString()}
-                </div>
-                <div style={{ fontSize: '12px', color: '#1565C0' }}>משרות</div>
-              </div>
-
-              <div style={{ backgroundColor: '#fff3e0', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '2px solid #FF9800' }}>
-                <DollarSign size={32} color="#FF9800" style={{ marginBottom: '10px' }} />
-                <h4 style={{ margin: '0', color: '#E65100' }}>הכנסות שנתיות</h4>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#BF360C' }}>
-                  {formatCurrency(getMetricValue('revenue_annual') * 1000000)}
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#f3e5f5', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '2px solid #9C27B0' }}>
-                <TrendingUp size={32} color="#9C27B0" style={{ marginBottom: '10px' }} />
-                <h4 style={{ margin: '0', color: '#6A1B9A' }}>שירותי ציבור</h4>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#4A148C' }}>
-                  {getMetricValue('public_services').toFixed(0)}%
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* 10-Year Revenue Projections */}
+          {/* Land Use Breakdown */}
+          <div style={{ marginBottom: '30px' }}>
+            <h2>🏘️ פילוח שימושי קרקע</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' }}>
+              {landUse.map((use) => (
+                <div
+                  key={use.land_use_type}
+                  style={{
+                    backgroundColor: 'white',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    border: `3px solid ${use.color_hex}`,
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '10px',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: use.color_hex,
+                    borderRadius: '50%'
+                  }} />
+                  <h4 style={{ margin: '0 0 10px 0', textTransform: 'capitalize', color: '#333' }}>
+                    {getLandUseLabel(use.land_use_type)}
+                  </h4>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: use.color_hex }}>
+                    {use.percentage.toFixed(1)}%
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                    {use.area_sqm.toLocaleString()} מ״ר
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Revenue Projections Chart */}
           {yearlyData.length > 0 && (
             <div style={{ marginBottom: '30px' }}>
               <h2>💰 תחזית הכנסות והוצאות - 10 שנים</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
-                
-                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                  <h3>תחזית שנתית</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={yearlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
-                      <Tooltip formatter={(value: number) => [formatCurrency(value), '']} />
-                      <Legend />
-                      <Bar dataKey="income" fill="#4CAF50" name="הכנסות" />
-                      <Bar dataKey="expenses" fill="#F44336" name="הוצאות" />
-                      <Bar dataKey="net" fill="#2196F3" name="נטו" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                  <h3>סיכום 10 שנים</h3>
-                  <div style={{ marginBottom: '15px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <TrendingUp size={20} color="#4CAF50" style={{ marginLeft: '8px' }} />
-                      <span style={{ fontWeight: 'bold', color: '#2E7D32' }}>סה"כ הכנסות:</span>
-                    </div>
-                    <div style={{ fontSize: '18px', color: '#1B5E20' }}>{formatCurrency(totalRevenue)}</div>
-                  </div>
-                  
-                  <div style={{ marginBottom: '15px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <TrendingDown size={20} color="#F44336" style={{ marginLeft: '8px' }} />
-                      <span style={{ fontWeight: 'bold', color: '#C62828' }}>סה"כ הוצאות:</span>
-                    </div>
-                    <div style={{ fontSize: '18px', color: '#B71C1C' }}>{formatCurrency(totalExpenses)}</div>
-                  </div>
-
-                  <div style={{ borderTop: '2px solid #ddd', paddingTop: '15px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <DollarSign size={20} color="#2196F3" style={{ marginLeft: '8px' }} />
-                      <span style={{ fontWeight: 'bold', color: '#1565C0' }}>רווח נטו:</span>
-                    </div>
-                    <div style={{ 
-                      fontSize: '20px', 
-                      fontWeight: 'bold',
-                      color: totalRevenue - totalExpenses > 0 ? '#1B5E20' : '#B71C1C' 
-                    }}>
-                      {formatCurrency(totalRevenue - totalExpenses)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Land Use Distribution */}
-          <div style={{ marginBottom: '30px' }}>
-            <h2>🏘️ חלוקת שטחים</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
-              
               <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={landUse}
-                      dataKey="percentage"
-                      nameKey="land_use_type"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label={({ land_use_type, percentage }) => `${percentage.toFixed(1)}%`}
-                    >
-                      {landUse.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color_hex} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={yearlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
+                    <Tooltip formatter={(value: number) => [formatCurrency(value), '']} />
+                    <Legend />
+                    <Bar dataKey="income" fill="#4CAF50" name="הכנסות" />
+                    <Bar dataKey="expenses" fill="#F44336" name="הוצאות" />
+                    <Bar dataKey="net" fill="#2196F3" name="נטו" />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                {landUse.map((use) => (
-                  <div
-                    key={use.land_use_type}
-                    style={{
-                      backgroundColor: 'white',
-                      padding: '15px',
-                      borderRadius: '8px',
-                      border: `3px solid ${use.color_hex}`,
-                      position: 'relative'
-                    }}
-                  >
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: use.color_hex,
-                      borderRadius: '50%'
-                    }} />
-                    <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>
-                      {use.land_use_type === 'public' ? 'ציבורי' :
-                       use.land_use_type === 'commercial' ? 'מסחרי' :
-                       use.land_use_type === 'industrial' ? 'תעשייה' :
-                       use.land_use_type === 'mixed_use' ? 'שימוש מעורב' :
-                       use.land_use_type === 'open_space' ? 'שטח פתוח' :
-                       use.land_use_type === 'parking' ? 'חניות' : use.land_use_type}
-                    </h4>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: use.color_hex }}>
-                      {use.percentage.toFixed(1)}%
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
-                      {use.area_sqm.toLocaleString()} מ"ר
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
-          </div>
+          )}
 
-          {/* Revenue Breakdown by Source */}
+          {/* Revenue Summary */}
           {revenues.length > 0 && (
             <div style={{ marginBottom: '30px' }}>
-              <h2>💼 פירוט הכנסות לפי מקור</h2>
-              <div style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#f5f5f5' }}>
-                      <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>מקור הכנסה</th>
-                      <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>מבנה</th>
-                      <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>שנה</th>
-                      <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>סכום</th>
-                      <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>סוג</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {revenues.slice(0, 15).map((revenue, index) => (
-                      <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                        <td style={{ padding: '12px' }}>{revenue.revenue_source}</td>
-                        <td style={{ padding: '12px', fontSize: '14px', color: '#666' }}>{revenue.building_name || 'כללי'}</td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>{revenue.projection_year}</td>
-                        <td style={{ 
-                          padding: '12px', 
-                          textAlign: 'left',
-                          color: revenue.annual_revenue > 0 ? '#2E7D32' : '#C62828',
-                          fontWeight: 'bold'
-                        }}>
-                          {formatCurrency(Math.abs(revenue.annual_revenue))}
-                        </td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            backgroundColor: revenue.revenue_direction === 'הכנסה' ? '#E8F5E8' : '#FFEBEE',
-                            color: revenue.revenue_direction === 'הכנסה' ? '#2E7D32' : '#C62828'
-                          }}>
-                            {revenue.revenue_direction}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {revenues.length > 15 && (
-                  <div style={{ padding: '15px', textAlign: 'center', backgroundColor: '#f9f9f9', color: '#666' }}>
-                    ועוד {revenues.length - 15} פריטים נוספים...
+              <h2>💼 סיכום כלכלי</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                <div style={{ backgroundColor: '#e8f5e8', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '2px solid #4CAF50' }}>
+                  <TrendingUp size={32} color="#4CAF50" style={{ marginBottom: '10px' }} />
+                  <h4 style={{ margin: '0', color: '#2E7D32' }}>סה״כ הכנסות</h4>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1B5E20' }}>
+                    {formatCurrency(totalRevenue)}
                   </div>
-                )}
+                </div>
+                
+                <div style={{ backgroundColor: '#ffebee', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '2px solid #F44336' }}>
+                  <TrendingDown size={32} color="#F44336" style={{ marginBottom: '10px' }} />
+                  <h4 style={{ margin: '0', color: '#C62828' }}>סה״כ הוצאות</h4>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#B71C1C' }}>
+                    {formatCurrency(totalExpenses)}
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: '#e3f2fd', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '2px solid #2196F3' }}>
+                  <DollarSign size={32} color="#2196F3" style={{ marginBottom: '10px' }} />
+                  <h4 style={{ margin: '0', color: '#1565C0' }}>רווח נטו</h4>
+                  <div style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 'bold',
+                    color: totalRevenue - totalExpenses > 0 ? '#1B5E20' : '#B71C1C' 
+                  }}>
+                    {formatCurrency(totalRevenue - totalExpenses)}
+                  </div>
+                </div>
               </div>
             </div>
           )}
+
+          {/* Quick Comparison */}
+          <div style={{ marginBottom: '30px' }}>
+            <h2>⚡ השוואה מהירה</h2>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f8f9fa' }}>
+                    <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #dee2e6' }}>מדד</th>
+                    {plans.map(plan => (
+                      <th key={plan.id} style={{ 
+                        padding: '12px', 
+                        textAlign: 'center', 
+                        borderBottom: '2px solid #dee2e6',
+                        backgroundColor: selectedPlan?.id === plan.id ? '#ffebee' : '#f8f9fa'
+                      }}>
+                        {plan.plan_name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {['far', 'employment', 'units_total', 'public_services'].map(metricType => (
+                    <tr key={metricType}>
+                      <td style={{ padding: '12px', fontWeight: 'bold', borderBottom: '1px solid #dee2e6' }}>
+                        {getMetricLabel(metricType)}
+                      </td>
+                      {plans.map(plan => {
+                        return (
+                          <td key={plan.id} style={{ 
+                            padding: '12px', 
+                            textAlign: 'center', 
+                            borderBottom: '1px solid #dee2e6',
+                            backgroundColor: selectedPlan?.id === plan.id ? '#ffebee' : 'white'
+                          }}>
+                            {selectedPlan?.id === plan.id ? (
+                              metrics.find(m => m.metric_type === metricType)?.metric_value?.toFixed(1) || 'N/A'
+                            ) : (
+                              '...'
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
 
-      {/* Summary Box */}
-      <div style={{
-        backgroundColor: '#e8f5e8',
-        border: '2px solid #4CAF50',
-        borderRadius: '8px',
-        padding: '20px',
-        marginTop: '30px'
+      {/* Debug Info */}
+      <div style={{ 
+        backgroundColor: '#f1f3f4', 
+        padding: '15px', 
+        borderRadius: '8px', 
+        marginTop: '30px',
+        fontSize: '12px',
+        color: '#666'
       }}>
-        <h3 style={{ color: '#2E7D32', marginTop: '0' }}>📋 סיכום תוכנית הקצאה</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-          <div>
-            <strong>תוכניות זמינות:</strong> {plans.length}<br />
-            <strong>תוכנית נבחרת:</strong> {selectedPlan?.plan_name || 'אין'}
-          </div>
-          <div>
-            <strong>שטח כולל:</strong> {landUse.reduce((sum, use) => sum + use.area_sqm, 0).toLocaleString()} מ"ר<br />
-            <strong>תחזיות הכנסות:</strong> {revenues.length} פריטים
-          </div>
-          <div>
-            <strong>מיקום:</strong> מרכז תעשייה תל אביב<br />
-            <strong>מזהה פרויקט:</strong> {projectId}
-          </div>
-        </div>
+        <h3>🔧 מידע דיבוג</h3>
+        <p>סה״כ תוכניות: {plans.length}</p>
+        <p>תוכנית נבחרת: {selectedPlan?.plan_name || 'אין'}</p>
+        <p>מדדים נטענו: {metrics.length}</p>
+        <p>סוגי שימושי קרקע: {landUse.length}</p>
+        <p>תחזיות הכנסות: {revenues.length}</p>
+        <p>מזהה פרויקט: {projectId}</p>
       </div>
     </div>
   );
+};
+
+// Helper functions for Hebrew labels
+const getMetricLabel = (metricType: string): string => {
+  const labels: { [key: string]: string } = {
+    'far': 'יחס שטח בנוי',
+    'employment': 'תעסוקה',
+    'units_total': 'סה״כ יחידות',
+    'height_avg': 'גובה ממוצע',
+    'coverage': 'אחוז כיסוי',
+    'public_services': 'שירותי ציבור'
+  };
+  return labels[metricType] || metricType;
+};
+
+const getLandUseLabel = (landUseType: string): string => {
+  const labels: { [key: string]: string } = {
+    'residential': 'מגורים',
+    'commercial': 'מסחר',
+    'public': 'ציבורי',
+    'open_space': 'שטח פתוח',
+    'parking': 'חניות',
+    'industrial': 'תעשייה',
+    'mixed_use': 'שימוש מעורב'
+  };
+  return labels[landUseType] || landUseType;
 };
 
 export default PublicAllocationDashboard;
