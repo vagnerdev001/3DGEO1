@@ -105,23 +105,16 @@ function App() {
           height: window.Cesium.Cartographic.fromCartesian(point).height
         }));
         
-        // Convert floor colors to hex strings for database storage
-        const floorColorsHex = floorColors.map(color => 
-          `#${color.red.toString(16).padStart(2, '0')}${color.green.toString(16).padStart(2, '0')}${color.blue.toString(16).padStart(2, '0')}`
-        );
-        
         const saveResult = await buildingService.saveBuilding(
           buildingId, 
           {
             height: height,
             ai_command: aiCommand,
-            num_floors: floors.toString(),
-            floor_colors: floorColorsHex
+            num_floors: floors.toString()
           },
           geometryPoints,
           aiCommand,
-          height,
-          floorColorsHex
+          height
         );
         
         if (saveResult.success) {
@@ -382,3 +375,5 @@ function App() {
 }
 
 export default App;
+
+export default App
