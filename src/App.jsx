@@ -43,7 +43,7 @@ function App() {
 
   // Plans Dashboard state
   const [showPlansDashboard, setShowPlansDashboard] = useState(false);
-  const [currentProjectId, setCurrentProjectId] = useState('default-project');
+  const [currentProjectId, setCurrentProjectId] = useState(null);
 
   const handleWidgetVisibilityChange = (widgetName, isVisible) => {
     setWidgetVisibility(prev => ({
@@ -69,6 +69,40 @@ function App() {
   useEffect(() => {
     loadSavedBuildings();
     loadPlacedObjects();
+  }, []);
+
+  // Initialize project ID
+  useEffect(() => {
+    const initializeProject = async () => {
+      try {
+        const { planService } = await import('./services/planService');
+        
+        // Check for existing projects
+        const projectsResult = await planService.getProjects();
+        
+        if (projectsResult.success && projectsResult.data && projectsResult.data.length > 0) {
+          // Use the first existing project
+          setCurrentProjectId(projectsResult.data[0].id);
+        } else {
+          // Create a new default project
+          const newProjectResult = await planService.createProject({
+            name: 'Default Project',
+            description: 'Default urban planning project',
+            city: 'Tel Aviv'
+          });
+          
+          if (newProjectResult.success && newProjectResult.data) {
+            setCurrentProjectId(newProjectResult.data.id);
+          } else {
+            console.error('Failed to create default project:', newProjectResult.error);
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing project:', error);
+      }
+    };
+
+    initializeProject();
   }, []);
 
   const loadPlacedObjects = async () => {
@@ -1123,7 +1157,7 @@ function App() {
         {!showPlansDashboard && widgetVisibility.plansDashboard && (
           <button 
             className="window-menu-btn plans-dashboard"
-            onClick={() => setShowPlansDashboard(true)}
+            onClick={() => currentProjectId && setShowPlansDashboard(true)}
           >
             🏗️ לוח תוכניות
           </button>
