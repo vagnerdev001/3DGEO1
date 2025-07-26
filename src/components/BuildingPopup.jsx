@@ -1,11 +1,16 @@
 import React from 'react';
 import './BuildingPopup.css';
 
-const BuildingPopup = ({ building, position, onEdit, onClose }) => {
+const BuildingPopup = ({ building, position, onEdit, onClose, onEmbed }) => {
   if (!building || !position) return null;
 
   const handleEdit = () => {
     onEdit(building);
+    onClose();
+  };
+
+  const handleEmbed = () => {
+    onEmbed(building);
     onClose();
   };
 
@@ -59,6 +64,9 @@ const BuildingPopup = ({ building, position, onEdit, onClose }) => {
       <div className="popup-actions">
         <button className="edit-button" onClick={handleEdit}>
           ✏️ ערוך בניין
+        </button>
+        <button className="embed-button" onClick={handleEmbed}>
+          🖼️ הצג הטמעה
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@ import BuildingPopup from './components/BuildingPopup';
 import LayerSwitcher from './components/LayerSwitcher';
 import AdminPanel from './components/AdminPanel';
 import ObjectPlacer from './components/ObjectPlacer';
+import EmbedPopup from './components/EmbedPopup';
 import { buildingService } from './services/supabase';
 import './App.css';
 
@@ -32,6 +33,8 @@ function App() {
   const [showObjectPlacer, setShowObjectPlacer] = useState(true);
   const [showLayerSwitcher, setShowLayerSwitcher] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(true);
+  const [showEmbedPopup, setShowEmbedPopup] = useState(false);
+  const [embedUrl, setEmbedUrl] = useState('');
 
   // Load saved buildings when component mounts
   useEffect(() => {
@@ -904,6 +907,16 @@ function App() {
             setShowBuildingPopup(false);
             setSelectedBuilding(null);
           }}
+          onEmbed={() => {
+            setEmbedUrl('https://www.example.com');
+            setShowEmbedPopup(true);
+          }}
+        />
+      )}
+      {showEmbedPopup && (
+        <EmbedPopup
+          url={embedUrl}
+          onClose={() => setShowEmbedPopup(false)}
         />
       )}
       <AdminPanel 

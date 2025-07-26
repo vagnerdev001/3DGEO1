@@ -114,6 +114,34 @@
   transform: translateY(0);
 }
 
+.embed-button {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.embed-button:hover {
+  background: linear-gradient(135deg, #1976D2, #0D47A1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.embed-button:active {
+  transform: translateY(0);
+}
+
 /* Animation for popup appearance */
 .building-popup {
   animation: popupFadeIn 0.3s ease-out;
