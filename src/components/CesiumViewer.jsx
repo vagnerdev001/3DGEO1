@@ -19,6 +19,13 @@ const CesiumViewer = forwardRef(({
   useImperativeHandle(ref, () => ({
     viewer: viewerRef.current,
     getActivePoints: () => activePointsRef.current,
+    displayBuildings: (buildings) => {
+      // This will be called from App.jsx to display saved buildings
+      if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+        // Buildings will be displayed by the parent component
+        console.log('מוכן להציג בניינים שמורים');
+      }
+    },
     startDrawing: () => {
       console.log('=== STARTING DRAWING ===');
       isDrawingRef.current = true;

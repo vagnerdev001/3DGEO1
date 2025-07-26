@@ -16,6 +16,96 @@ function App() {
   const [aiCommand, setAiCommand] = useState('');
   const [currentLayer, setCurrentLayer] = useState('osm');
   const viewerRef = useRef(null);
+  const [savedBuildings, setSavedBuildings] = useState([]);
+
+  // Load saved buildings when component mounts
+  useEffect(() => {
+    loadSavedBuildings();
+  }, []);
+
+  const loadSavedBuildings = async () => {
+    try {
+      const result = await buildingService.getAllBuildings();
+      if (result.success && result.data) {
+        console.log('טוען בניינים שמורים:', result.data.length);
+        setSavedBuildings(result.data);
+        
+        // Display buildings on the map
+        if (viewerRef.current && viewerRef.current.viewer) {
+          displaySavedBuildings(result.data);
+        }
+      }
+    } catch (error) {
+      console.error('שגיאה בטעינת בניינים:', error);
+    }
+  };
+
+  const displaySavedBuildings = (buildings) => {
+    if (!viewerRef.current || !viewerRef.current.viewer) return;
+    
+    const viewer = viewerRef.current.viewer;
+    
+    buildings.forEach(building => {
+      if (building.geometry_points && building.geometry_points.length >= 3) {
+        console.log('מציג בניין:', building.id);
+        
+        // Convert geometry points back to Cartesian3
+        const points = building.geometry_points.map(point => 
+          window.Cesium.Cartesian3.fromDegrees(
+            point.longitude, 
+            point.latitude, 
+            point.height || 0
+          )
+        );
+        
+        const height = parseFloat(building.height) || 30;
+        const floors = parseInt(building.num_floors) || parseInt(building.no_floors) || Math.max(1, Math.floor(height / 3.5));
+        const floorColors = building.floor_colors || [];
+        
+        createSavedBuilding(viewer, building.id, points, height, floors, floorColors);
+      }
+    });
+  };
+
+  const createSavedBuilding = (viewer, buildingId, points, totalHeight, numFloors, savedFloorColors) => {
+    console.log(`יוצר בניין שמור עם ${numFloors} קומות, גובה כולל: ${totalHeight}מ`);
+    
+    // Create rounded corners for the building footprint
+    const roundedPoints = createRoundedCorners(points, 2.0);
+    
+    const floorHeight = totalHeight / numFloors;
+    const building = viewer.entities.add({
+      id: buildingId,
+      isBuilding: true
+    });
+    
+    // Use saved colors or generate new ones
+    const floorColors = savedFloorColors && savedFloorColors.length === numFloors 
+      ? savedFloorColors.map(colorHex => window.Cesium.Color.fromCssColorString(colorHex))
+      : generateFloorColors(numFloors);
+    
+    // Create each floor as a separate polygon
+    for (let floor = 0; floor < numFloors; floor++) {
+      const floorBottom = floor * floorHeight;
+      const floorTop = (floor + 1) * floorHeight;
+      
+      viewer.entities.add({
+        id: `${buildingId}-floor-${floor}`,
+        parent: building,
+        polygon: {
+          hierarchy: new window.Cesium.PolygonHierarchy(roundedPoints),
+          height: floorBottom,
+          extrudedHeight: floorTop,
+          material: floorColors[floor],
+          outline: true,
+          outlineColor: window.Cesium.Color.BLACK.withAlpha(0.3),
+          outlineWidth: 1
+        }
+      });
+    }
+    
+    return building;
+  };
 
   const handleDrawingStateChange = (drawing, points, building, buildingId, message) => {
     console.log('🔄 APP: Drawing state change:', { 
@@ -120,6 +210,9 @@ function App() {
         if (saveResult.success) {
           console.log('Building saved successfully');
           setStatusMessage(`בניין נוצר ונשמר! גובה: ${height}מ', קומות: ${floors}`);
+          
+          // Reload saved buildings to include the new one
+          loadSavedBuildings();
         } else {
           console.error('Save failed:', saveResult.error);
           setStatusMessage(`בניין נוצר אך השמירה נכשלה: ${saveResult.error}`);
@@ -336,6 +429,13 @@ function App() {
     console.log('- canCreate:', canCreate);
     console.log('========================');
   }, [isDrawing, activeShapePoints, aiCommand]);
+
+  // Load buildings when viewer is ready
+  useEffect(() => {
+    if (viewerRef.current && savedBuildings.length > 0) {
+      displaySavedBuildings(savedBuildings);
+    }
+  }, [viewerRef.current, savedBuildings]);
 
   return (
     <div className="app">
