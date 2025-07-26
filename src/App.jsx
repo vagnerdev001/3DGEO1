@@ -108,9 +108,11 @@ function App() {
     let floorColors;
     if (savedFloorColors && savedFloorColors.length === numFloors) {
       // Apply transparency to saved colors
-      floorColors = savedFloorColors.map(colorHex => 
-        window.Cesium.Color.fromCssColorString(colorHex).withAlpha(transparency)
-      );
+      floorColors = savedFloorColors.map(colorHex => {
+        const color = window.Cesium.Color.fromCssColorString(colorHex);
+        // If color parsing fails, use a default grey color
+        return (color || window.Cesium.Color.GREY).withAlpha(transparency);
+      });
     } else {
       // Generate new colors with transparency
       floorColors = generateFloorColors(numFloors, transparency);
