@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import CesiumViewer from './components/CesiumViewer';
 import AIControls from './components/AIControls';
 import DataFormModal from './components/DataFormModal';
+import BuildingPopup from './components/BuildingPopup';
 import LayerSwitcher from './components/LayerSwitcher';
 import { buildingService } from './services/supabase';
 import './App.css';
@@ -16,6 +17,9 @@ function App() {
   const [aiCommand, setAiCommand] = useState('');
   const [currentLayer, setCurrentLayer] = useState('osm');
   const [showCustomBuildings, setShowCustomBuildings] = useState(true);
+  const [showBuildingPopup, setShowBuildingPopup] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const viewerRef = useRef(null);
   const [savedBuildings, setSavedBuildings] = useState([]);
 
@@ -196,8 +200,20 @@ function App() {
 
   const handleBuildingClick = (buildingEntity) => {
     console.log('🏢 Building clicked:', buildingEntity.id);
-    setCurrentBuildingId(buildingEntity.id);
-    setShowDataForm(true);
+    
+    // Set popup position
+    if (clickPosition) {
+      setPopupPosition(clickPosition);
+    }
+    
+    // Find the building data from savedBuildings
+    const buildingData = savedBuildings.find(b => b.id === buildingEntity.id);
+    if (buildingData) {
+      setSelectedBuilding(buildingData);
+      setShowBuildingPopup(true);
+    } else {
+      console.warn('Building data not found for:', buildingEntity.id);
+    }
   };
 
   const handleCreateBuilding = async (viewerPoints) => {
@@ -309,6 +325,12 @@ function App() {
       console.error('Error calling Gemini API:', error);
       setStatusMessage('שגיאה בתקשורת עם הבינה המלאכותית.');
     }
+  };
+
+  const handleEditBuilding = (building) => {
+    setCurrentBuildingId(building.id);
+    setShowDataForm(true);
+    setShowBuildingPopup(false);
   };
 
   const getExtrusionHeightFromAI = async (userCommand) => {
@@ -624,6 +646,17 @@ function App() {
               // Reload all buildings to get the updated data
               loadSavedBuildings();
             }
+          }}
+        />
+      )}
+      {showBuildingPopup && selectedBuilding && (
+        <BuildingPopup
+          building={selectedBuilding}
+          position={popupPosition}
+          onEdit={handleEditBuilding}
+          onClose={() => {
+            setShowBuildingPopup(false);
+            setSelectedBuilding(null);
           }}
         />
       )}
