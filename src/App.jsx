@@ -449,23 +449,47 @@ function App() {
     // Set popup position directly below the AI controls panel
     setPopupPosition({ x: window.innerWidth - 320, y: 280 });
     
-    // Find the building data from savedBuildings
-    const buildingData = savedBuildings.find(b => b.id === buildingEntity.id);
-    if (buildingData) {
-      setSelectedBuilding(buildingData);
-      setShowBuildingPopup(true);
-    } else {
-      console.warn('Building data not found for:', buildingEntity.id);
-      // Show popup anyway with basic info
-      setSelectedBuilding({
-        id: buildingEntity.id,
-        full_addres_q: 'לא זמין',
-        bldg_num: 'לא זמין',
-        bldg_type: 'לא זמין',
-        num_floors: 'לא זמין',
-        height: 'לא זמין'
-      });
-      setShowBuildingPopup(true);
+    // Always fetch fresh data from database when clicking a building
+    loadFreshBuildingData(buildingEntity.id);
+  };
+
+  const loadFreshBuildingData = async (buildingId) => {
+    try {
+      console.log('🔄 Loading fresh building data for:', buildingId);
+      const result = await buildingService.getBuilding(buildingId);
+      if (result.success && result.data) {
+        console.log('✅ Fresh building data loaded:', result.data);
+        console.log('🔗 Weblink in fresh data:', result.data.weblink);
+        setSelectedBuilding(result.data);
+        setShowBuildingPopup(true);
+      } else {
+        console.warn('Building data not found for:', buildingId);
+        // Fallback to cached data
+        const buildingData = savedBuildings.find(b => b.id === buildingId);
+        if (buildingData) {
+          setSelectedBuilding(buildingData);
+          setShowBuildingPopup(true);
+        } else {
+          // Show popup anyway with basic info
+          setSelectedBuilding({
+            id: buildingId,
+            full_addres_q: 'לא זמין',
+            bldg_num: 'לא זמין',
+            bldg_type: 'לא זמין',
+            num_floors: 'לא זמין',
+            height: 'לא זמין'
+          });
+          setShowBuildingPopup(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading fresh building data:', error);
+      // Fallback to cached data
+      const buildingData = savedBuildings.find(b => b.id === buildingId);
+      if (buildingData) {
+        setSelectedBuilding(buildingData);
+        setShowBuildingPopup(true);
+      }
     }
   };
 
