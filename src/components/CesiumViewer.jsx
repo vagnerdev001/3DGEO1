@@ -109,9 +109,8 @@ const CesiumViewer = forwardRef(({
                   activePointsRef.current[activePointsRef.current.length - 2], 
                   activePointsRef.current[activePointsRef.current.length - 1]
                 ],
-                width: 4,
-                material: window.Cesium.Color.CYAN,
-                clampToGround: true
+                width: 3,
+                material: window.Cesium.Color.CORAL
               }
             });
             drawingEntitiesRef.current.push(lineEntity);
@@ -185,6 +184,33 @@ const CesiumViewer = forwardRef(({
       }
     };
   }, []);
+
+  // Handle layer changes
+  useEffect(() => {
+    if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+      const getImageryProvider = (layerType) => {
+        switch (layerType) {
+          case 'aerial':
+            return new window.Cesium.IonImageryProvider({ assetId: 2 });
+          case 'f4':
+            return new window.Cesium.UrlTemplateImageryProvider({
+              url: 'https://tile.f4map.com/tiles/f4_2d/{z}/{x}/{y}.png',
+              credit: new window.Cesium.Credit('F4 Map', false)
+            });
+          default:
+            return new window.Cesium.UrlTemplateImageryProvider({
+              url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              subdomains: ['a', 'b', 'c'],
+              credit: new window.Cesium.Credit('<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>', false)
+            });
+        }
+      };
+
+      const viewer = viewerRef.current;
+      viewer.imageryLayers.removeAll();
+      viewer.imageryLayers.addImageryProvider(getImageryProvider(currentLayer));
+    }
+  }, [currentLayer]);
 
   // Handle drawing state changes
   useEffect(() => {
