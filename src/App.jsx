@@ -57,7 +57,7 @@ function App() {
     try {
       const height = await getExtrusionHeightFromAI(aiCommand);
       if (height !== null && viewerRef.current) {
-        const viewer = viewerRef.current;
+        const viewer = viewerRef.current.viewer || viewerRef.current;
         
         if (extrudedBuilding) {
           viewer.entities.remove(extrudedBuilding);
@@ -82,7 +82,7 @@ function App() {
         setStatusMessage(`Building created with height: ${height}m.`);
         
         // Save building geometry and AI command to database
-        await buildingService.saveBuilding(
+        const saveResult = await buildingService.saveBuilding(
           buildingId, 
           {
             height: height,
@@ -97,9 +97,21 @@ function App() {
           height
         );
         
+        if (saveResult.success) {
+          setStatusMessage(`Building created and saved! Height: ${height}m`);
+        } else {
+          setStatusMessage(`Building created but save failed: ${saveResult.error}`);
+        }
+        
         setShowDataForm(true);
+        
+        // Clear drawing state
+        if (viewerRef.current && viewerRef.current.clearDrawing) {
+          viewerRef.current.clearDrawing();
+        }
         setActiveShapePoints([]);
         setAiCommand('');
+        setIsDrawing(false);
       } else {
         setStatusMessage('AI could not determine a height.');
       }

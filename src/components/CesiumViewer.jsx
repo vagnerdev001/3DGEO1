@@ -15,7 +15,7 @@ const CesiumViewer = forwardRef(({
   const isDrawingRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
-    ...viewerRef.current,
+    viewer: viewerRef.current,
     startDrawing: () => {
       isDrawingRef.current = true;
       activePointsRef.current = [];
@@ -33,6 +33,17 @@ const CesiumViewer = forwardRef(({
       }
       drawingEntitiesRef.current = [];
       onDrawingStateChange(false, [], null, null, "Drawing cancelled. Click 'Start Drawing' to begin.");
+    },
+    clearDrawing: () => {
+      // Clear all drawing entities including preview polygon
+      if (viewerRef.current) {
+        drawingEntitiesRef.current.forEach(entity => {
+          viewerRef.current.entities.remove(entity);
+        });
+      }
+      drawingEntitiesRef.current = [];
+      activePointsRef.current = [];
+      isDrawingRef.current = false;
     }
   }));
 
@@ -176,6 +187,7 @@ const CesiumViewer = forwardRef(({
         );
         
         const previewPolygon = viewerRef.current.entities.add({
+          id: 'preview-polygon',
           polygon: {
             hierarchy: new window.Cesium.PolygonHierarchy(activePointsRef.current),
             material: window.Cesium.Color.BLUE.withAlpha(0.3),

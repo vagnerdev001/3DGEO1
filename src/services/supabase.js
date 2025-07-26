@@ -10,6 +10,8 @@ export const buildingService = {
   // Save building data
   async saveBuilding(buildingId, data, geometryPoints = null, aiCommand = '', height = 0) {
     try {
+      console.log('Saving building:', { buildingId, data, geometryPoints, aiCommand, height });
+      
       const { error } = await supabase
         .from('buildings')
         .upsert({
@@ -22,6 +24,7 @@ export const buildingService = {
         });
 
       if (error) throw error;
+      console.log('Building saved successfully');
       return { success: true };
     } catch (error) {
       console.error('Error saving building:', error);
