@@ -62,7 +62,6 @@ function App() {
     
     // Use viewer points if available, otherwise use app state
     const pointsToUse = viewerPoints.length > 0 ? viewerPoints : activeShapePoints;
-    console.log('Points to use for building:', pointsToUse.length);
     
     console.log('Active shape points:', activeShapePoints);
     console.log('Points available for building creation:', activeShapePoints.length > 0);
