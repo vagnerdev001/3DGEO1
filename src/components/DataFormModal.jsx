@@ -179,7 +179,7 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         formData.floor_colors
       );
       if (result.success) {
-        onSave && onSave('נתוני הבניין נשמרו בהצלחה!', true); // Signal to refresh building display
+        onSave && onSave('נתוני הבניין נשמרו בהצלחה!', true, buildingId); // Pass building ID for targeted refresh
         onClose();
       } else {
         console.error('Error saving building:', result.error);

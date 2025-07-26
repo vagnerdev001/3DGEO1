@@ -45,9 +45,10 @@ function App() {
     
     const viewer = viewerRef.current.viewer;
     
-    // Clear existing building entities to prevent duplicates
+    // Clear existing building entities to prevent duplicates - but preserve currently edited building
+    const currentlyEditingId = currentBuildingId;
     const existingEntities = viewer.entities.values.filter(entity => 
-      entity.id && entity.id.startsWith('building-')
+      entity.id && entity.id.startsWith('building-') && entity.id !== currentlyEditingId
     );
     existingEntities.forEach(entity => {
       viewer.entities.remove(entity);
@@ -56,6 +57,21 @@ function App() {
     buildings.forEach(building => {
       if (building.geometry_points && building.geometry_points.length >= 3) {
         console.log('מציג בניין:', building.id);
+        
+        // If this is the currently edited building, remove it first to refresh with new colors
+        if (building.id === currentlyEditingId) {
+          const existingBuilding = viewer.entities.getById(building.id);
+          if (existingBuilding) {
+            viewer.entities.remove(existingBuilding);
+          }
+          // Also remove all floor entities for this building
+          const floorEntities = viewer.entities.values.filter(entity => 
+            entity.id && entity.id.startsWith(`${building.id}-floor-`)
+          );
+          floorEntities.forEach(entity => {
+            viewer.entities.remove(entity);
+          });
+        }
         
         // Convert geometry points back to Cartesian3
         const points = building.geometry_points.map(point => 
