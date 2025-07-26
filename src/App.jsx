@@ -491,7 +491,7 @@ function App() {
     if (viewerRef.current && savedBuildings.length > 0) {
       displaySavedBuildings(savedBuildings);
     }
-  }, [viewerRef.current, savedBuildings]);
+  }, [viewerRef.current, savedBuildings, showCustomBuildings]);
 
   return (
     <div className="app">
