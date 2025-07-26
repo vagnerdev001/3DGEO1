@@ -211,11 +211,11 @@ export const objectsService = {
       const timestamp = Date.now();
       const extension = fileName.split('.').pop();
       const baseName = fileName.replace(/\.[^/.]+$/, "");
-      const uniqueFileName = `${timestamp}_${baseName}.${extension}`;
+      const uniqueFileName = encodeURIComponent(`${timestamp}_${baseName}.${extension}`);
       
       const { data, error } = await supabase.storage
         .from('3d-models')
-        .upload(`models/${uniqueFileName}`, file, {
+        .upload(uniqueFileName, file, {
           cacheControl: '3600',
           upsert: false
         });
@@ -225,7 +225,7 @@ export const objectsService = {
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('3d-models')
-        .getPublicUrl(`models/${uniqueFileName}`);
+        .getPublicUrl(uniqueFileName);
 
       return { success: true, data: { ...data, publicUrl: urlData.publicUrl } };
     } catch (error) {
@@ -240,11 +240,11 @@ export const objectsService = {
       const timestamp = Date.now();
       const extension = fileName.split('.').pop();
       const baseName = fileName.replace(/\.[^/.]+$/, "");
-      const uniqueFileName = `${timestamp}_${baseName}.${extension}`;
+      const uniqueFileName = encodeURIComponent(`${timestamp}_${baseName}.${extension}`);
       
       const { data, error } = await supabase.storage
         .from('thumbnails')
-        .upload(`thumbnails/${uniqueFileName}`, file, {
+        .upload(uniqueFileName, file, {
           cacheControl: '3600',
           upsert: false
         });
@@ -254,7 +254,7 @@ export const objectsService = {
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('thumbnails')
-        .getPublicUrl(`thumbnails/${uniqueFileName}`);
+        .getPublicUrl(uniqueFileName);
 
       return { success: true, data: { ...data, publicUrl: urlData.publicUrl } };
     } catch (error) {
@@ -292,7 +292,7 @@ export const objectsService = {
       const fileName = fileUrl.split('/').pop();
       const { error } = await supabase.storage
         .from('3d-models')
-        .remove([`models/${fileName}`]);
+        .remove([fileName]);
       
       if (error) throw error;
       return { success: true };
@@ -308,7 +308,7 @@ export const objectsService = {
       const fileName = thumbnailUrl.split('/').pop();
       const { error } = await supabase.storage
         .from('thumbnails')
-        .remove([`thumbnails/${fileName}`]);
+        .remove([fileName]);
       
       if (error) throw error;
       return { success: true };
