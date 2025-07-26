@@ -111,34 +111,34 @@ const PublicAllocationDashboard: React.FC = () => {
       const samplePlans = [
         {
           project_id: projectId,
-          plan_name: 'תוכנית הקצאה בסיסית - מרכז ציבורי',
+          plan_name: 'תוכנית A - הקצאה מינימלית',
           plan_type: 'baseline',
           status: 'approved',
-          description: 'תוכנית הקצאה בסיסית למבני ציבור במרכז העיר',
+          description: 'הקצאה של 40% לשטחי ציבור. מתאימה לפיתוח מהיר עם השקעה נמוכה. דגש על יעילות כלכלית ומקסום הכנסות עירוניות. כוללת: בית עירייה, מרכז בריאות, בית ספר יסודי.',
           version: 1
         },
         {
           project_id: projectId,
-          plan_name: 'תוכנית הקצאה מורחבת - שירותי קהילה',
+          plan_name: 'תוכנית B - הקצאה מורחבת',
           plan_type: 'alternative',
           status: 'review',
-          description: 'הרחבת שטחי ציבור עם דגש על שירותים קהילתיים',
+          description: 'הקצאה של 50% לשטחי ציבור. מתמקדת בשירותי קהילה מתקדמים ואיכות חיים גבוהה. כוללת: מרכז תרבות, ספרייה, מתחם ספורט, גן ילדים, מרכז קשישים. השקעה גבוהה יותר אך תמורה חברתית משמעותית.',
           version: 1
         },
         {
           project_id: projectId,
-          plan_name: 'תוכנית הקצאה כלכלית - איזון הכנסות',
+          plan_name: 'תוכנית C - איזון כלכלי-חברתי',
           plan_type: 'alternative',
           status: 'draft',
-          description: 'תוכנית ממוקדת איזון בין צרכי ציבור להכנסות עירוניות',
+          description: 'הקצאה של 45% לשטחי ציבור. פתרון מאוזן המשלב יעילות כלכלית עם מענה לצרכי הקהילה. כוללת שילוב של מבני ציבור ומסחר בקומות התחתונות. ROI חיובי תוך 7 שנים.',
           version: 1
         },
         {
           project_id: projectId,
-          plan_name: 'תוכנית הקצאה מוצעת - פתרון היברידי',
+          plan_name: 'תוכנית D - חדשנות וקיימות',
           plan_type: 'proposed',
           status: 'review',
-          description: 'שילוב של כל התוכניות עם דגש על קיימות כלכלית',
+          description: 'הקצאה של 42.5% לשטחי ציבור עם טכנולוגיות חכמות. מבני ציבור ירוקים, מערכות אנרגיה מתחדשת, חניות חכמות. השקעה בטכנולוגיה לחיסכון ארוך טווח. פתרון עתידני ובר-קיימא.',
           version: 1
         }
       ];
@@ -458,37 +458,197 @@ const PublicAllocationDashboard: React.FC = () => {
               style={{
                 border: selectedPlan?.id === plan.id ? '3px solid #F44336' : '1px solid #ddd',
                 borderRadius: '8px',
-                padding: '15px',
+                padding: '20px',
                 cursor: 'pointer',
                 backgroundColor: selectedPlan?.id === plan.id ? '#ffebee' : 'white',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                boxShadow: selectedPlan?.id === plan.id ? '0 4px 12px rgba(244, 67, 54, 0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
+                transform: selectedPlan?.id === plan.id ? 'translateY(-2px)' : 'none'
               }}
             >
-              <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{plan.plan_name}</h3>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <h3 style={{ margin: '0', color: '#333', fontSize: '18px', fontWeight: 'bold' }}>{plan.plan_name}</h3>
+                {selectedPlan?.id === plan.id && (
+                  <span style={{ 
+                    backgroundColor: '#4CAF50', 
+                    color: 'white', 
+                    padding: '4px 8px', 
+                    borderRadius: '12px', 
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}>
+                    נבחר ✓
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                 <span style={{
                   padding: '4px 8px',
                   borderRadius: '4px',
                   fontSize: '12px',
+                  fontWeight: 'bold',
                   backgroundColor: plan.plan_type === 'baseline' ? '#4CAF50' : 
                                   plan.plan_type === 'proposed' ? '#9C27B0' : '#F44336',
                   color: 'white'
                 }}>
-                  {plan.plan_type}
+                  {plan.plan_type === 'baseline' ? 'בסיסית' : 
+                   plan.plan_type === 'proposed' ? 'מוצעת' : 'חלופית'}
                 </span>
                 <span style={{
                   padding: '4px 8px',
                   borderRadius: '4px',
                   fontSize: '12px',
+                  fontWeight: 'bold',
                   backgroundColor: plan.status === 'approved' ? '#4CAF50' : 
                                   plan.status === 'review' ? '#FF9800' : '#9E9E9E',
                   color: 'white'
                 }}>
-                  {plan.status}
+                  {plan.status === 'approved' ? 'מאושרת' : 
+                   plan.status === 'review' ? 'בבדיקה' : 'טיוטה'}
+                </span>
+                <span style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#2196F3',
+                  color: 'white'
+                }}>
+                  {plan.plan_name.includes('A') ? '40% ציבור' :
+                   plan.plan_name.includes('B') ? '50% ציבור' :
+                   plan.plan_name.includes('C') ? '45% ציבור' : '42.5% ציבור'}
                 </span>
               </div>
-              <p style={{ margin: '0', fontSize: '14px', color: '#666' }}>{plan.description}</p>
-              <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#999' }}>
+              <p style={{ 
+                margin: '0 0 12px 0', 
+                fontSize: '14px', 
+                color: '#555', 
+                lineHeight: '1.5',
+                textAlign: 'justify'
+              }}>
+                {plan.description}
+              </p>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                paddingTop: '12px',
+                borderTop: '1px solid #eee'
+              }}>
+                <span style={{ fontSize: '12px', color: '#999' }}>
+                  נוצר: {new Date(plan.created_date).toLocaleDateString('he-IL')}
+                </span>
+                <span style={{ 
+                  fontSize: '12px', 
+                  color: selectedPlan?.id === plan.id ? '#F44336' : '#666',
+                  fontWeight: selectedPlan?.id === plan.id ? 'bold' : 'normal'
+                }}>
+                  {selectedPlan?.id === plan.id ? 'לחץ לפרטים מלאים ↓' : 'לחץ לבחירה'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Summary comparison cards */}
+        <div style={{ 
+          marginTop: '20px', 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '15px',
+          padding: '20px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: '#4CAF50' }}>תוכנית A</h4>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>40%</div>
+            <div style={{ fontSize: '12px', color: '#666' }}>שטח ציבורי</div>
+            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>יעילות כלכלית גבוהה</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: '#F44336' }}>תוכנית B</h4>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>50%</div>
+            <div style={{ fontSize: '12px', color: '#666' }}>שטח ציבורי</div>
+            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>שירותי קהילה מתקדמים</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: '#F44336' }}>תוכנית C</h4>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>45%</div>
+            <div style={{ fontSize: '12px', color: '#666' }}>שטח ציבורי</div>
+            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>איזון כלכלי-חברתי</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: '#9C27B0' }}>תוכנית D</h4>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>42.5%</div>
+            <div style={{ fontSize: '12px', color: '#666' }}>שטח ציבורי</div>
+            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>חדשנות וקיימות</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Decision helper */}
+      <div style={{ 
+        marginTop: '20px',
+        padding: '20px',
+        backgroundColor: '#e3f2fd',
+        borderRadius: '8px',
+        border: '2px solid #2196F3'
+      }}>
+        <h3 style={{ margin: '0 0 15px 0', color: '#1565C0', textAlign: 'center' }}>
+          🤔 איך לבחור את התוכנית המתאימה?
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>💰</div>
+            <strong>תקציב מוגבל?</strong>
+            <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+              בחר תוכנית A - השקעה נמוכה, תמורה מהירה
+            </div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>👥</div>
+            <strong>דגש על קהילה?</strong>
+            <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+              בחר תוכנית B - שירותי קהילה מתקדמים
+            </div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚖️</div>
+            <strong>איזון מושלם?</strong>
+            <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+              בחר תוכנית C - איזון כלכלי-חברתי
+            </div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🌱</div>
+            <strong>חשיבה עתידנית?</strong>
+            <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+              בחר תוכנית D - טכנולוגיה וקיימות
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {selectedPlan && (
+      <>
+        {/* Enhanced plan header */}
+        <div style={{ 
+          marginBottom: '30px',
+          padding: '25px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '12px',
+          color: 'white',
+          textAlign: 'center'
+        }}>
+          <h2 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>
+            📊 ניתוח מפורט: {selectedPlan.plan_name}
+          </h2>
+          <p style={{ margin: '0', fontSize: '16px', opacity: 0.9 }}>
+            {selectedPlan.description.split('.')[0]}
+          </p>
+        </div>
                 נוצר: {new Date(plan.created_date).toLocaleDateString('he-IL')}
               </p>
             </div>
