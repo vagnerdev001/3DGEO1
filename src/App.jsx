@@ -94,7 +94,7 @@ function App() {
     console.log('🎯 Starting object placement mode');
     setIsPlacingObject(true);
     setSelectedObjectPosition(null);
-    setStatusMessage('לחץ על המפה לבחירת מיקום לאובייקט');
+    setStatusMessage('מצב מיקום פעיל - לחץ על המפה למיקום האובייקט');
   };
 
   const handleCancelObjectPlacing = () => {

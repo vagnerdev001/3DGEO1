@@ -66,6 +66,7 @@ const ObjectPlacer = ({
       alert('אנא בחר דגם לפני תחילת המיקום');
       return;
     }
+    console.log('🎯 ObjectPlacer: Starting placement for model:', selectedModel);
     onStartPlacing();
   };
 
