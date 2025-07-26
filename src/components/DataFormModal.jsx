@@ -79,6 +79,12 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
       ...prev,
       [name]: value
     }));
+    
+    // Apply transparency changes in real-time
+    if (name === 'transparency' && onSave) {
+      const transparencyValue = parseFloat(value);
+      onSave(`שקיפות עודכנה ל-${Math.round(transparencyValue * 100)}%`, false, transparencyValue, true);
+    }
   };
 
   const handleFloorColorChange = (floorIndex, newColor) => {

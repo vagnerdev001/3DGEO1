@@ -511,8 +511,9 @@ function App() {
             setCurrentBuildingId(null);
           }}
           onSave={(message, shouldRefresh, transparency) => {
+          onSave={(message, shouldRefresh, transparency, isPreview = false) => {
             setStatusMessage(message);
-            if (shouldRefresh && transparency !== undefined) {
+            if ((shouldRefresh || isPreview) && transparency !== undefined) {
               // Refresh the specific building with new transparency
               const building = savedBuildings.find(b => b.id === currentBuildingId);
               if (building && viewerRef.current && viewerRef.current.viewer) {
@@ -550,7 +551,7 @@ function App() {
                   createSavedBuilding(viewer, building.id, points, height, floors, floorColors, transparency);
                 }
               }
-            } else {
+            } else if (shouldRefresh && !isPreview) {
               // Just reload all buildings to get the updated data
               loadSavedBuildings();
             }
