@@ -93,50 +93,6 @@ const PublicAllocationDashboard: React.FC = () => {
           await createPublicAllocationPlans(currentProjectId);
         }
 
-        // First, get or create a project for public allocation
-        let { data: projects, error: projectError } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('name', 'Public Allocation Tel Aviv')
-          .limit(1);
-
-        if (projectError) throw projectError;
-
-        let currentProjectId: string;
-
-        if (!projects || projects.length === 0) {
-          // Create a new project for public allocation
-          const { data: newProject, error: createError } = await supabase
-            .from('projects')
-            .insert({
-              name: 'Public Allocation Tel Aviv',
-              description: 'הקצאת שטחים למבני ציבור - מרכז תעשייה תל אביב',
-              city: 'Tel Aviv'
-            })
-            .select()
-            .single();
-
-          if (createError) throw createError;
-          currentProjectId = newProject.id;
-        } else {
-          currentProjectId = projects[0].id;
-        }
-
-        setProjectId(currentProjectId);
-
-        // Check if we already have public allocation plans
-        const { data: existingPlans, error: plansError } = await supabase
-          .from('building_plans')
-          .select('*')
-          .eq('project_id', currentProjectId);
-
-        if (plansError) throw plansError;
-
-        if (!existingPlans || existingPlans.length === 0) {
-          // Create sample public allocation plans
-          await createPublicAllocationPlans(currentProjectId);
-        }
-
         // Fetch all plans
         await fetchPlans(currentProjectId);
       } catch (error) {
