@@ -265,12 +265,13 @@ const CesiumViewer = forwardRef(({
       } else {
         // Handle building clicks when not drawing
         const pickedObject = viewer.scene.pick(event.position);
-        const clickPosition = { x: event.position.x, y: event.position.y };
         console.log('Picked object:', pickedObject);
         
         if (window.Cesium.defined(pickedObject) && window.Cesium.defined(pickedObject.id)) {
           const entity = pickedObject.id;
           console.log('Clicked entity:', entity.id, 'isBuilding:', entity.isBuilding);
+          
+          const clickPosition = { x: event.position.x, y: event.position.y };
           
           // Check if it's a building or a floor of a building
           if (entity.isBuilding) {

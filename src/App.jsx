@@ -201,10 +201,8 @@ function App() {
   const handleBuildingClick = (buildingEntity) => {
     console.log('🏢 Building clicked:', buildingEntity.id);
     
-    // Set popup position
-    if (clickPosition) {
-      setPopupPosition(clickPosition);
-    }
+    // Set popup position - use default if not provided
+    setPopupPosition(clickPosition || { x: 200, y: 200 });
     
     // Find the building data from savedBuildings
     const buildingData = savedBuildings.find(b => b.id === buildingEntity.id);
@@ -213,6 +211,16 @@ function App() {
       setShowBuildingPopup(true);
     } else {
       console.warn('Building data not found for:', buildingEntity.id);
+      // Show popup anyway with basic info
+      setSelectedBuilding({
+        id: buildingEntity.id,
+        full_addres_q: 'לא זמין',
+        bldg_num: 'לא זמין',
+        bldg_type: 'לא זמין',
+        num_floors: 'לא זמין',
+        height: 'לא זמין'
+      });
+      setShowBuildingPopup(true);
     }
   };
 
