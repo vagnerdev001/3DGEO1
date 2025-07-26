@@ -51,23 +51,11 @@ function App() {
   };
 
   const handleCreateBuilding = async () => {
-    console.log('=== CREATE BUILDING BUTTON CLICKED ===');
-    console.log('App state - activeShapePoints:', activeShapePoints.length);
-    console.log('App state - aiCommand:', aiCommand);
-    console.log('App state - isDrawing:', isDrawing);
-    
-    // Get the actual points from the viewer
-    const viewerPoints = viewerRef.current ? viewerRef.current.getActivePoints() : [];
-    console.log('Viewer points:', viewerPoints.length);
-    
-    // Use viewer points if available, otherwise use app state
-    const pointsToUse = viewerPoints.length > 0 ? viewerPoints : activeShapePoints;
-    
-    console.log('Active shape points:', activeShapePoints);
-    console.log('Points available for building creation:', activeShapePoints.length > 0);
+    console.log('activeShapePoints:', activeShapePoints.length);
+    console.log('aiCommand:', aiCommand);
 
-    if (pointsToUse.length < 3) {
-      console.error('Not enough points for building creation:', pointsToUse.length);
+    if (activeShapePoints.length < 3) {
+      console.error('Not enough points for building creation');
       alert('Please draw a valid building footprint first.');
       return;
     }
@@ -85,7 +73,7 @@ function App() {
       const height = await getExtrusionHeightFromAI(aiCommand);
       console.log('AI returned height:', height);
       
-      if (height !== null && viewerRef.current && viewerRef.current.viewer) {
+      if (height !== null && viewerRef.current) {
         const viewer = viewerRef.current.viewer;
         
         // Remove existing building if any
@@ -100,7 +88,7 @@ function App() {
           id: buildingId,
           isBuilding: true,
           polygon: {
-            hierarchy: new window.Cesium.PolygonHierarchy(pointsToUse),
+            hierarchy: new window.Cesium.PolygonHierarchy(activeShapePoints),
             extrudedHeight: height,
             material: window.Cesium.Color.YELLOW.withAlpha(0.9),
             outline: true,
@@ -114,7 +102,7 @@ function App() {
         
         // Save building geometry and AI command to database
         console.log('Saving to database...');
-        const geometryPoints = pointsToUse.map(point => ({
+        const geometryPoints = activeShapePoints.map(point => ({
           longitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).longitude),
           latitude: window.Cesium.Math.toDegrees(window.Cesium.Cartographic.fromCartesian(point).latitude),
           height: window.Cesium.Cartographic.fromCartesian(point).height
@@ -140,9 +128,7 @@ function App() {
         }
         
         // Clear drawing state and show data form
-        if (viewerRef.current && viewerRef.current.clearAll) {
-          viewerRef.current.clearAll();
-        }
+        viewerRef.current.clearAll();
         setActiveShapePoints([]);
         setAiCommand('');
         setIsDrawing(false);
@@ -196,14 +182,17 @@ function App() {
 
   // Debug: Log state changes
   useEffect(() => {
-    const canCreate = activeShapePoints.length >= 3 && !isDrawing && aiCommand.trim().length > 0;
+    const hasPolygon = activeShapePoints.length >= 3;
+    const hasCommand = aiCommand.trim().length > 0;
+    const canCreate = hasPolygon && !isDrawing && hasCommand;
+    
     console.log('=== APP STATE UPDATE ===');
     console.log('- isDrawing:', isDrawing);
     console.log('- activeShapePoints:', activeShapePoints.length);
-    console.log('- aiCommand:', aiCommand.length > 0 ? `"${aiCommand}"` : 'empty');
+    console.log('- hasPolygon:', hasPolygon);
+    console.log('- hasCommand:', hasCommand);
     console.log('- canCreate:', canCreate);
     console.log('========================');
-    console.log('Actual activeShapePoints:', activeShapePoints);
   }, [isDrawing, activeShapePoints, aiCommand]);
 
   return (

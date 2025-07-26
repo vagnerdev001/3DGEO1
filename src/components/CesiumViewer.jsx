@@ -64,6 +64,9 @@ const CesiumViewer = forwardRef(({
       activeShapeRef.current = null;
       floatingPointRef.current = null;
       isDrawingRef.current = false;
+    },
+    hasCompletedPolygon: () => {
+      return activePointsRef.current.length >= 3 && !isDrawingRef.current;
     }
   }));
 
@@ -108,6 +111,9 @@ const CesiumViewer = forwardRef(({
       });
       console.log('Final polygon created:', finalPolygon);
     }
+    
+    // KEEP the points in the ref for building creation
+    // DO NOT clear activePointsRef.current here!
     
     // Update parent with completed points
     const message = `Footprint complete with ${completedPoints.length} points. Enter AI command and click "Create Building".`;
