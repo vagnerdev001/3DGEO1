@@ -34,6 +34,12 @@ const CesiumViewer = forwardRef(({
 
     viewerRef.current = viewer;
 
+    // Check if viewer was successfully created
+    if (!viewer || !viewer.scene) {
+      console.error('Failed to create Cesium viewer');
+      return;
+    }
+
     // Initialize scene
     const initializeScene = async () => {
       try {
