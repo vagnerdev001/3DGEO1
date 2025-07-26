@@ -135,29 +135,43 @@ function App() {
   };
 
   const handleObjectPositionSelect = (position) => {
-    console.log('🎯 Position selected for object placement:', position);
+    console.log('🎯 handleObjectPositionSelect called with:', position);
+    setSelectedObjectPosition(position);
+    setStatusMessage(`מיקום נבחר: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)}`);
     
-    // Immediately place the object when position is selected
-    handleDirectObjectPlacement(position);
+    // Place object immediately
+    setTimeout(() => {
+      handleDirectObjectPlacement(position);
+    }, 100);
   };
 
   const handleDirectObjectPlacement = async (position) => {
-    // Get the selected model from ObjectPlacer component
-    const selectedModel = document.querySelector('select[name="model_id"]')?.value;
-    const selectedCategory = document.querySelector('select[name="category_id"]')?.value;
-    const objectName = document.querySelector('input[name="objectName"]')?.value || '';
+    console.log('🏗️ handleDirectObjectPlacement called with:', position);
+    
+    // Get current selection from state or DOM
+    const modelSelect = document.querySelector('#object-placer select[name="model_id"]');
+    const categorySelect = document.querySelector('#object-placer select[name="category_id"]');
+    const nameInput = document.querySelector('#object-placer input[name="objectName"]');
+    
+    const selectedModel = modelSelect?.value;
+    const selectedCategory = categorySelect?.value;
+    const objectName = nameInput?.value || '';
+    
+    console.log('📋 Form values:', { selectedModel, selectedCategory, objectName });
     
     if (!selectedModel) {
-      setStatusMessage('❌ אנא בחר דגם לפני המיקום');
+      setStatusMessage('❌ שגיאה: לא נמצא דגם נבחר');
+      setIsPlacingObject(false);
       return;
     }
 
-    setStatusMessage('💾 שומר אובייקט...');
+    setStatusMessage('💾 שומר אובייקט במסד הנתונים...');
 
     try {
       const { objectsService } = await import('./services/objectsService');
       
       // Get model data
+      console.log('📦 Loading model data for category:', selectedCategory);
       const modelsResult = await objectsService.getModelsByCategory(selectedCategory);
       if (!modelsResult.success) {
         throw new Error('Failed to get model data');
@@ -167,6 +181,8 @@ function App() {
       if (!selectedModelData) {
         throw new Error('Model not found');
       }
+
+      console.log('📦 Selected model data:', selectedModelData);
 
       const objectData = {
         model_id: selectedModel,
@@ -181,12 +197,12 @@ function App() {
         properties: {}
       };
 
-      console.log('📍 Placing object directly:', objectData);
+      console.log('💾 Saving object to database:', objectData);
       
       const result = await objectsService.placeObject(objectData);
       
       if (result.success) {
-        console.log('✅ Object placed and saved successfully');
+        console.log('✅ Object saved successfully:', result.data);
         setStatusMessage(`✅ אובייקט "${objectData.name}" נשמר והוצב בהצלחה!`);
         
         // Add to local state
@@ -200,16 +216,17 @@ function App() {
         setSelectedObjectPosition(null);
         
         // Clear form
-        const nameInput = document.querySelector('input[name="objectName"]');
         if (nameInput) nameInput.value = '';
         
       } else {
         console.error('Failed to place object:', result.error);
         setStatusMessage(`❌ שגיאה במיקום אובייקט: ${result.error}`);
+        setIsPlacingObject(false);
       }
     } catch (error) {
       console.error('Error placing object:', error);
       setStatusMessage(`❌ שגיאה במיקום אובייקט: ${error.message}`);
+      setIsPlacingObject(false);
     }
   };
 

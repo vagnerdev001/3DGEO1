@@ -103,13 +103,14 @@ const ObjectPlacer = ({
   };
 
   return (
-    <div className="object-placer">
+    <div className="object-placer" id="object-placer">
       <h3>🏗️ מציב אובייקטים</h3>
       
       <div className="form-group">
         <label>קטגוריה:</label>
         <select 
           value={selectedCategory} 
+          name="category_id"
           onChange={(e) => setSelectedCategory(e.target.value)}
           disabled={loading}
         >
@@ -129,7 +130,6 @@ const ObjectPlacer = ({
             value={selectedModel} 
             onChange={(e) => setSelectedModel(e.target.value)}
             name="model_id"
-            name="category_id"
             disabled={loading}
           >
             <option value="">בחר דגם...</option>
@@ -162,7 +162,7 @@ const ObjectPlacer = ({
             onClick={handleStartPlacing}
             disabled={!selectedModel || loading}
           >
-            📍 התחל מיקום
+            🎯 התחל מיקום
           </button>
         ) : (
           <button 
@@ -176,7 +176,9 @@ const ObjectPlacer = ({
 
       {isPlacing && (
         <div className="placing-status">
-          📍 לחץ על המפה למיקום האובייקט - הוא יישמר אוטומטית
+          🎯 לחץ על המפה כדי למקם את האובייקט
+          <br />
+          💾 האובייקט יישמר אוטומטית במסד הנתונים
         </div>
       )}
 

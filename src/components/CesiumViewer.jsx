@@ -226,11 +226,12 @@ const CesiumViewer = forwardRef(({
 
     // Left click handler
     handler.setInputAction((event) => {
-      console.log('Left click - isDrawing:', isDrawingRef.current);
-      console.log('Left click - isPlacingObject:', isPlacingObject);
+      console.log('🖱️ Left click detected');
+      console.log('- isDrawing:', isDrawingRef.current);
+      console.log('- isPlacingObject:', isPlacingObject);
       
       if (isPlacingObject) {
-        console.log('📍 Processing object placement click');
+        console.log('🎯 Processing object placement click');
         // Handle object placement
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
@@ -239,12 +240,12 @@ const CesiumViewer = forwardRef(({
           const latitude = window.Cesium.Math.toDegrees(cartographic.latitude);
           const height = cartographic.height;
           
-          console.log('📍 Object position selected, placing immediately:', { longitude, latitude, height });
+          console.log('✅ Position calculated:', { longitude, latitude, height });
           onObjectPositionSelect({ longitude, latitude, height });
         } else {
-          console.log('❌ Could not get earth position from click');
+          console.log('❌ Could not calculate earth position');
         }
-        return; // Important: return early to prevent other click handlers
+        return;
       } else if (isDrawingRef.current) {
         const earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
         if (window.Cesium.defined(earthPosition)) {
