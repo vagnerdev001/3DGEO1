@@ -65,7 +65,7 @@ function App() {
             viewer.entities.remove(existingBuilding);
           }
           // Also remove all floor entities for this building
-              material: floorColors[floor].withAlpha(transparency),
+          const floorEntities = viewer.entities.values.filter(entity => 
             entity.id && entity.id.startsWith(`${building.id}-floor-`)
           );
           floorEntities.forEach(entity => {
@@ -503,6 +503,4 @@ function App() {
   );
 }
 
-
-
-export default App
+export default App;
