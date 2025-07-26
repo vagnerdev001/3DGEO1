@@ -134,6 +134,12 @@ function App() {
     }
   };
 
+  const handleObjectPositionSelect = (position) => {
+    console.log('🎯 Position selected for object placement:', position);
+    setSelectedObjectPosition(position);
+    setStatusMessage(`מיקום נבחר: ${position.longitude.toFixed(6)}, ${position.latitude.toFixed(6)}`);
+  };
+
   const loadSavedBuildings = async () => {
     try {
       console.log('Loading saved buildings...');
