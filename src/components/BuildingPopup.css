@@ -189,7 +189,7 @@
 }
 
 .edit-button {
-  width: 100%;
+  flex: 1;
   padding: 10px;
   background: linear-gradient(135deg, #4CAF50, #45a049);
   color: white;
@@ -231,6 +231,29 @@
   color: white;
   border: none;
   border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.view-plans-btn:hover {
+  background: linear-gradient(135deg, #1976D2, #1565C0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.view-plans-btn {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;

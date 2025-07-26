@@ -125,9 +125,16 @@ const BuildingPopup = ({ building, position, onEdit, onClose }) => {
       </div>
       
       <div className="popup-actions">
-        <button className="edit-button" onClick={handleEdit}>
-          ✏️ ערוך בניין
-        </button>
+        <div style={{display: 'flex', gap: '10px'}}>
+          <button className="edit-button" onClick={handleEdit}>
+            ✏️ ערוך בניין
+          </button>
+          {building.weblink && (
+            <button className="view-plans-btn" onClick={() => setShowEmbed(true)}>
+              📋 צפה בתוכנית
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Embed Viewer Modal */}
