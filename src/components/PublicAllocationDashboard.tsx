@@ -145,9 +145,7 @@ const PublicAllocationDashboard: React.FC = () => {
 
       const { data: createdPlans, error: plansError } = await supabase
         .from('building_plans')
-        .upsert(samplePlans, { 
-          onConflict: 'project_id,plan_name,version' 
-        })
+        .insert(samplePlans)
         .select();
 
       if (plansError) throw plansError;
@@ -210,7 +208,7 @@ const PublicAllocationDashboard: React.FC = () => {
 
     const { error } = await supabase
       .from('plan_metrics')
-      .upsert(metricsToInsert, { onConflict: 'plan_id,metric_type,category' });
+      .insert(metricsToInsert);
 
     if (error) throw error;
   };
@@ -255,7 +253,7 @@ const PublicAllocationDashboard: React.FC = () => {
 
     const { error } = await supabase
       .from('plan_land_use')
-      .upsert(landUseToInsert, { onConflict: 'plan_id,land_use_type' });
+      .insert(landUseToInsert);
 
     if (error) throw error;
   };
@@ -313,7 +311,7 @@ const PublicAllocationDashboard: React.FC = () => {
     // Insert revenue projections data
     const { error } = await supabase
       .from('revenue_summary_10_year')
-      .upsert(revenueData, { onConflict: 'plan_name,revenue_source,projection_year' });
+      .insert(revenueData);
     
     if (error) {
       console.warn('Could not insert revenue data:', error);
