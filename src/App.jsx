@@ -929,117 +929,37 @@ function App() {
         </div>
         {!showAIControls && (
           <button 
+            className="window-menu-btn ai-controls"
             onClick={() => setShowAIControls(true)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '6px',
-              margin: '2px 0',
-              background: 'rgba(76, 175, 80, 0.8)',
-              border: 'none',
-              borderRadius: '4px',
-              color: '#fff',
-              fontSize: '11px',
-              cursor: 'pointer'
-            }}
-          {!showAIControls && (
-            <button 
-              className="window-menu-btn ai-controls"
-              onClick={() => setShowAIControls(true)}
-            >
-              🏗️ יוצר בניינים
-            </button>
-          )}
-          {!showObjectPlacer && (
-            <button 
-              className="window-menu-btn object-placer"
-              onClick={() => setShowObjectPlacer(true)}
-            >
-              🎯 מציב אובייקטים
-            </button>
-          )}
-          {!showLayerSwitcher && (
-            <button 
-              className="window-menu-btn layer-switcher"
-              onClick={() => setShowLayerSwitcher(true)}
-            >
-              🗺️ שכבות מפה
-            </button>
-          )}
-          {!showAdminPanel && (
-            <button 
-              className="window-menu-btn admin-panel"
-              onClick={() => setShowAdminPanel(true)}
-            >
-              🔧 ניהול מערכת
-            </button>
-          )}
-        </div>
-
-        {/* תפריט חלונות ישן - להסרה */}
-        {/* <div className="window-menu">
-          <button className="window-menu-btn ai-controls">
+          >
             🏗️ יוצר בניינים
           </button>
         )}
         {!showObjectPlacer && (
           <button 
+            className="window-menu-btn object-placer"
             onClick={() => setShowObjectPlacer(true)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '6px',
-              margin: '2px 0',
-              background: 'rgba(33, 150, 243, 0.8)',
-              border: 'none',
-              borderRadius: '4px',
-              color: '#fff',
-              fontSize: '11px',
-              cursor: 'pointer'
-            }}
           >
-            🏗️ מציב אובייקטים
+            🎯 מציב אובייקטים
           </button>
         )}
         {!showLayerSwitcher && (
           <button 
+            className="window-menu-btn layer-switcher"
             onClick={() => setShowLayerSwitcher(true)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '6px',
-              margin: '2px 0',
-              background: 'rgba(156, 39, 176, 0.8)',
-              border: 'none',
-              borderRadius: '4px',
-              color: '#fff',
-              fontSize: '11px',
-              cursor: 'pointer'
-            }}
           >
             🗺️ שכבות מפה
           </button>
         )}
         {!showAdminPanel && (
           <button 
+            className="window-menu-btn admin-panel"
             onClick={() => setShowAdminPanel(true)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '6px',
-              margin: '2px 0',
-              background: 'rgba(255, 107, 107, 0.8)',
-              border: 'none',
-              borderRadius: '4px',
-              color: '#fff',
-              fontSize: '11px',
-              cursor: 'pointer'
-            }}
           >
             🔧 ניהול מערכת
           </button>
-        </div> */}
-      )
+        )}
+      </div>
       }
       </div>
     </div>

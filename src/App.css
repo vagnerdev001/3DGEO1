@@ -4,6 +4,40 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
+}
+
+.window-menu-btn {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  margin: 2px 0;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  fontSize: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.window-menu-btn.ai-controls {
+  background: rgba(76, 175, 80, 0.8);
+}
+
+.window-menu-btn.object-placer {
+  background: rgba(33, 150, 243, 0.8);
+}
+
+.window-menu-btn.layer-switcher {
+  background: rgba(156, 39, 176, 0.8);
+}
+
+.window-menu-btn.admin-panel {
+  background: rgba(255, 107, 107, 0.8);
+}
+
+.window-menu-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   direction: rtl;
 }
