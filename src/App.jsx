@@ -46,7 +46,9 @@ function App() {
     const viewer = viewerRef.current.viewer;
     
     // Clear existing building entities to prevent duplicates
-    const existingEntities = viewer.entities.values.filter(entity => entity.isBuilding);
+    const existingEntities = viewer.entities.values.filter(entity => 
+      entity.id && entity.id.startsWith('building-')
+    );
     existingEntities.forEach(entity => {
       viewer.entities.remove(entity);
     });
@@ -54,12 +56,6 @@ function App() {
     buildings.forEach(building => {
       if (building.geometry_points && building.geometry_points.length >= 3) {
         console.log('מציג בניין:', building.id);
-        
-        // Check if building already exists and remove it
-        const existingBuilding = viewer.entities.getById(building.id);
-        if (existingBuilding) {
-          viewer.entities.remove(existingBuilding);
-        }
         
         // Convert geometry points back to Cartesian3
         const points = building.geometry_points.map(point => 
