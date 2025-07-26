@@ -3,6 +3,7 @@ import './BuildingPopup.css';
 
 const BuildingPopup = ({ building, position, onEdit, onClose }) => {
   const [showEmbed, setShowEmbed] = useState(false);
+  const [activePlan, setActivePlan] = useState('A');
   
   if (!building || !position) return null;
 
