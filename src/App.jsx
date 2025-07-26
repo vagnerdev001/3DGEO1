@@ -229,7 +229,7 @@ function App() {
         
         // Generate default floor colors
         const defaultFloorColors = generateFloorColors(floors, 0.9).map(color => 
-          `#${color.red.toString(16).padStart(2, '0')}${color.green.toString(16).padStart(2, '0')}${color.blue.toString(16).padStart(2, '0')}`
+          `#${Math.round(color.red * 255).toString(16).padStart(2, '0')}${Math.round(color.green * 255).toString(16).padStart(2, '0')}${Math.round(color.blue * 255).toString(16).padStart(2, '0')}`
         );
         
         const saveResult = await buildingService.saveBuilding(
