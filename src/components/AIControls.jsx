@@ -11,19 +11,19 @@ const AIControls = ({
 }) => {
   return (
     <div id="ai-controls">
-      <h3>AI Building Creator</h3>
+      <h3>יוצר בניינים חכם</h3>
       <button 
         id="draw-button" 
         className={isDrawing ? 'drawing' : ''}
         onClick={onStartDrawing}
       >
-        {isDrawing ? 'Finish Drawing' : 'Start Drawing'}
+        {isDrawing ? 'סיים ציור' : 'התחל ציור'}
       </button>
       <p id="status-message">{statusMessage}</p>
       <input 
         type="text" 
         id="ai-command" 
-        placeholder="e.g., 'Make it 15 floors high'"
+        placeholder="לדוגמה: 'תעשה אותו בגובה 15 קומות'"
         value={aiCommand}
         onChange={(e) => onAiCommandChange(e.target.value)}
       />
@@ -32,7 +32,7 @@ const AIControls = ({
         disabled={!canCreate}
         onClick={onCreateBuilding}
       >
-        Create Building
+        צור בניין
       </button>
     </div>
   );

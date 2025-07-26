@@ -13,12 +13,15 @@
   z-index: 20;
   color: #fff;
   padding: 20px;
+  direction: rtl;
+  text-align: right;
 }
 
 #data-form-container {
   max-height: calc(80vh - 120px);
   overflow-y: auto;
   padding-right: 15px;
+  padding-left: 0;
 }
 
 #data-form-modal h3 {
@@ -37,6 +40,7 @@
   margin-bottom: 5px;
   font-size: 14px;
   color: #bbb;
+  text-align: right;
 }
 
 .form-grid input {
@@ -47,11 +51,14 @@
   background-color: #333;
   color: #fff;
   box-sizing: border-box;
+  text-align: right;
+  direction: rtl;
 }
 
 #data-form-buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 15px;
   margin-top: 20px;
 }
 

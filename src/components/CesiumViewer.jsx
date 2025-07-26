@@ -31,6 +31,7 @@ const CesiumViewer = forwardRef(({
       }
       
       onDrawingStateChange(true, [], null, null, "Click to add points. Right-click to finish.");
+      onDrawingStateChange(true, [], null, null, "לחץ להוספת נקודות. לחיצה ימנית לסיום.");
     },
     finishDrawing: () => {
       console.log('Finishing drawing with points:', activePointsRef.current.length);
@@ -53,6 +54,7 @@ const CesiumViewer = forwardRef(({
       floatingPointRef.current = null;
       
       onDrawingStateChange(false, [], null, null, "Drawing cancelled. Click 'Start Drawing' to begin.");
+      onDrawingStateChange(false, [], null, null, "הציור בוטל. לחץ על 'התחל ציור' כדי להתחיל.");
     },
     clearAll: () => {
       console.log('Clearing all...');
@@ -116,7 +118,7 @@ const CesiumViewer = forwardRef(({
     console.log('✅ Points preserved in activePointsRef:', activePointsRef.current.length);
     
     // Update parent with completed points
-    const message = `Footprint complete with ${completedPoints.length} points. Enter AI command and click "Create Building".`;
+    const message = `מתאר הושלם עם ${completedPoints.length} נקודות. הכנס פקודת AI ולחץ על "צור בניין".`;
     console.log('✅ Calling onDrawingStateChange with:', completedPoints.length, 'points');
     
     onDrawingStateChange(
@@ -244,7 +246,7 @@ const CesiumViewer = forwardRef(({
           drawShape(activePointsRef.current);
           
           // Update status
-          const message = `Added point ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'Right-click to finish.' : 'Continue adding points.'}`;
+          const message = `נוספה נקודה ${activePointsRef.current.length}. ${activePointsRef.current.length >= 3 ? 'לחיצה ימנית לסיום.' : 'המשך להוסיף נקודות.'}`;
           onDrawingStateChange(
             true, 
             [...activePointsRef.current], 

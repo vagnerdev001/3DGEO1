@@ -151,15 +151,15 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         formData.floor_colors
       );
       if (result.success) {
-        onSave && onSave('Building data saved successfully!');
+        onSave && onSave('נתוני הבניין נשמרו בהצלחה!');
         onClose();
       } else {
         console.error('Error saving building:', result.error);
-        onSave && onSave('Error saving building data.');
+        onSave && onSave('שגיאה בשמירת נתוני הבניין.');
       }
     } catch (error) {
       console.error('Error saving building data:', error);
-      onSave && onSave('Error saving building data.');
+      onSave && onSave('שגיאה בשמירת נתוני הבניין.');
     } finally {
       setLoading(false);
     }
@@ -167,53 +167,116 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
 
   return (
     <div id="data-form-modal">
-      <h3>Building Information</h3>
+      <h3>פרטי הבניין</h3>
       <div id="data-form-container">
         <form id="building-data-form">
           <div className="form-grid">
-            <div><label htmlFor="wkt">WKT</label><input type="text" id="wkt" name="wkt" value={formData.wkt} onChange={handleInputChange} /></div>
-            <div><label htmlFor="full_addres_q">Full Address</label><input type="text" id="full_addres_q" name="full_addres_q" value={formData.full_addres_q} onChange={handleInputChange} /></div>
-            <div><label htmlFor="street_cod">street_cod</label><input type="text" id="street_cod" name="street_cod" value={formData.street_cod} onChange={handleInputChange} /></div>
-            <div><label htmlFor="bldg_num">bldg_num</label><input type="text" id="bldg_num" name="bldg_num" value={formData.bldg_num} onChange={handleInputChange} /></div>
-            <div><label htmlFor="bldg_type">bldg_type</label><input type="text" id="bldg_type" name="bldg_type" value={formData.bldg_type} onChange={handleInputChange} /></div>
-            <div><label htmlFor="num_floors">num_floors</label><input type="text" id="num_floors" name="num_floors" value={formData.num_floors} onChange={handleInputChange} /></div>
-            <div><label htmlFor="street_c_1">street_c_1</label><input type="text" id="street_c_1" name="street_c_1" value={formData.street_c_1} onChange={handleInputChange} /></div>
-            <div><label htmlFor="bldg_num_2">bldg_num_2</label><input type="text" id="bldg_num_2" name="bldg_num_2" value={formData.bldg_num_2} onChange={handleInputChange} /></div>
-            <div><label htmlFor="street_is_tama">street_is_tama</label><input type="text" id="street_is_tama" name="street_is_tama" value={formData.street_is_tama} onChange={handleInputChange} /></div>
-            <div><label htmlFor="no_floors">no_floors</label><input type="text" id="no_floors" name="no_floors" value={formData.no_floors} onChange={handleInputChange} /></div>
-            <div><label htmlFor="no_apt">no_apt</label><input type="text" id="no_apt" name="no_apt" value={formData.no_apt} onChange={handleInputChange} /></div>
-            <div><label htmlFor="st_code">st_code</label><input type="text" id="st_code" name="st_code" value={formData.st_code} onChange={handleInputChange} /></div>
-            <div><label htmlFor="street_1">street_1</label><input type="text" id="street_1" name="street_1" value={formData.street_1} onChange={handleInputChange} /></div>
-            <div><label htmlFor="color">color</label><input type="text" id="color" name="color" value={formData.color} onChange={handleInputChange} /></div>
-            <div><label htmlFor="מיון_2">מיון_2</label><input type="text" id="מיון_2" name="מיון_2" value={formData.מיון_2} onChange={handleInputChange} /></div>
-            <div><label htmlFor="masadcolor2">masadcolor2</label><input type="text" id="masadcolor2" name="masadcolor2" value={formData.masadcolor2} onChange={handleInputChange} /></div>
-            <div><label htmlFor="color_sofi">color_sofi</label><input type="text" id="color_sofi" name="color_sofi" value={formData.color_sofi} onChange={handleInputChange} /></div>
-            <div><label htmlFor="full_addresse">full_addresse</label><input type="text" id="full_addresse" name="full_addresse" value={formData.full_addresse} onChange={handleInputChange} /></div>
-            <div><label htmlFor="mi_address">mi_address</label><input type="text" id="mi_address" name="mi_address" value={formData.mi_address} onChange={handleInputChange} /></div>
-            <div><label htmlFor="codeapp">codeapp</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
-            <div><label htmlFor="height">Height (m)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
-            <div><label htmlFor="ai_command">AI Command</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
+            <div><label htmlFor="full_addres_q">כתובת מלאה</label><input type="text" id="full_addres_q" name="full_addres_q" value={formData.full_addres_q} onChange={handleInputChange} /></div>
+            <div><label htmlFor="bldg_num">מספר בניין</label><input type="text" id="bldg_num" name="bldg_num" value={formData.bldg_num} onChange={handleInputChange} /></div>
+            <div><label htmlFor="bldg_type">סוג בניין</label><input type="text" id="bldg_type" name="bldg_type" value={formData.bldg_type} onChange={handleInputChange} /></div>
+            <div><label htmlFor="num_floors">מספר קומות</label><input type="text" id="num_floors" name="num_floors" value={formData.num_floors} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_1">רחוב</label><input type="text" id="street_1" name="street_1" value={formData.street_1} onChange={handleInputChange} /></div>
+            <div><label htmlFor="no_apt">מספר דירות</label><input type="text" id="no_apt" name="no_apt" value={formData.no_apt} onChange={handleInputChange} /></div>
+            <div><label htmlFor="height">גובה (מטר)</label><input type="number" id="height" name="height" value={formData.height} onChange={handleInputChange} /></div>
+            <div><label htmlFor="ai_command">פקודת AI</label><input type="text" id="ai_command" name="ai_command" value={formData.ai_command} onChange={handleInputChange} /></div>
             <div><label htmlFor="הערכת_מחיר_שמאי">הערכת מחיר שמאי</label><input type="text" id="הערכת_מחיר_שמאי" name="הערכת_מחיר_שמאי" value={formData.הערכת_מחיר_שמאי} onChange={handleInputChange} /></div>
             <div><label htmlFor="ערך_משוער_לפי_מאפייני_סביבה">ערך משוער לפי מאפייני סביבה</label><input type="text" id="ערך_משוער_לפי_מאפייני_סביבה" name="ערך_משוער_לפי_מאפייני_סביבה" value={formData.ערך_משוער_לפי_מאפייני_סביבה} onChange={handleInputChange} /></div>
             <div><label htmlFor="מחיר_ממוצע_למטר">מחיר ממוצע למטר</label><input type="text" id="מחיר_ממוצע_למטר" name="מחיר_ממוצע_למטר" value={formData.מחיר_ממוצע_למטר} onChange={handleInputChange} /></div>
             <div><label htmlFor="צרכים_ציבוריים">צרכים ציבוריים</label><input type="text" id="צרכים_ציבוריים" name="צרכים_ציבוריים" value={formData.צרכים_ציבוריים} onChange={handleInputChange} /></div>
             <div><label htmlFor="שיוך_לרשות">שיוך לרשות</label><input type="text" id="שיוך_לרשות" name="שיוך_לרשות" value={formData.שיוך_לרשות} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_is_tama">רחוב תמ"א</label><input type="text" id="street_is_tama" name="street_is_tama" value={formData.street_is_tama} onChange={handleInputChange} /></div>
+            <div><label htmlFor="color">צבע</label><input type="text" id="color" name="color" value={formData.color} onChange={handleInputChange} /></div>
+            <div><label htmlFor="מיון_2">מיון 2</label><input type="text" id="מיון_2" name="מיון_2" value={formData.מיון_2} onChange={handleInputChange} /></div>
+            <div><label htmlFor="masadcolor2">צבע מסד 2</label><input type="text" id="masadcolor2" name="masadcolor2" value={formData.masadcolor2} onChange={handleInputChange} /></div>
+            <div><label htmlFor="color_sofi">צבע סופי</label><input type="text" id="color_sofi" name="color_sofi" value={formData.color_sofi} onChange={handleInputChange} /></div>
+            <div><label htmlFor="mi_address">כתובת MI</label><input type="text" id="mi_address" name="mi_address" value={formData.mi_address} onChange={handleInputChange} /></div>
+            <div><label htmlFor="codeapp">קוד אפליקציה</label><input type="text" id="codeapp" name="codeapp" value={formData.codeapp} onChange={handleInputChange} /></div>
+            <div><label htmlFor="wkt">WKT</label><input type="text" id="wkt" name="wkt" value={formData.wkt} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_cod">קוד רחוב</label><input type="text" id="street_cod" name="street_cod" value={formData.street_cod} onChange={handleInputChange} /></div>
+            <div><label htmlFor="street_c_1">רחוב C1</label><input type="text" id="street_c_1" name="street_c_1" value={formData.street_c_1} onChange={handleInputChange} /></div>
+            <div><label htmlFor="bldg_num_2">מספר בניין 2</label><input type="text" id="bldg_num_2" name="bldg_num_2" value={formData.bldg_num_2} onChange={handleInputChange} /></div>
+            <div><label htmlFor="no_floors">מספר קומות (נוסף)</label><input type="text" id="no_floors" name="no_floors" value={formData.no_floors} onChange={handleInputChange} /></div>
+            <div><label htmlFor="st_code">קוד ST</label><input type="text" id="st_code" name="st_code" value={formData.st_code} onChange={handleInputChange} /></div>
+            <div><label htmlFor="full_addresse">כתובת מלאה (נוסף)</label><input type="text" id="full_addresse" name="full_addresse" value={formData.full_addresse} onChange={handleInputChange} /></div>
+            
             <div style={{gridColumn: '1 / -1'}}>
-              <label>Floor Colors</label>
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px'}}>
+              <label>צבעי קומות ({formData.floor_colors?.length || 0} קומות)</label>
+              <div style={{display: 'flex', gap: '10px', marginBottom: '15px', justifyContent: 'center'}}>
+                <button 
+                  type="button" 
+                  onClick={generateGradientColors}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#FF6B6B',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  🌈 צור גרדיאנט
+                </button>
+                <button 
+                  type="button" 
+                  onClick={resetToDefaultColors}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#4ECDC4',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  🔄 אפס צבעים
+                </button>
+              </div>
+              <div style={{
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                gap: '15px', 
+                marginTop: '10px',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                padding: '10px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                borderRadius: '8px'
+              }}>
                 {formData.floor_colors && formData.floor_colors.map((color, index) => (
-                  <div key={index} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                    <span style={{fontSize: '12px', color: '#bbb'}}>Floor {index + 1}:</span>
+                  <div key={index} style={{
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '10px',
+                    padding: '8px',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255,255,255,0.2)'
+                  }}>
+                    <span style={{fontSize: '13px', color: '#bbb', minWidth: '60px'}}>קומה {index + 1}:</span>
                     <input 
                       type="color" 
                       value={color} 
-                      onChange={(e) => {
-                        const newColors = [...formData.floor_colors];
-                        newColors[index] = e.target.value;
-                        setFormData(prev => ({...prev, floor_colors: newColors}));
+                      onChange={(e) => handleFloorColorChange(index, e.target.value)}
+                      style={{
+                        width: '40px', 
+                        height: '30px', 
+                        border: 'none', 
+                        borderRadius: '4px',
+                        cursor: 'pointer'
                       }}
-                      style={{width: '40px', height: '30px', border: 'none', borderRadius: '4px'}}
                     />
+                    <span style={{
+                      fontSize: '11px', 
+                      color: '#888', 
+                      fontFamily: 'monospace',
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      padding: '2px 6px',
+                      borderRadius: '3px'
+                    }}>
+                      {color}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -222,10 +285,10 @@ const DataFormModal = ({ buildingId, onClose, onSave }) => {
         </form>
       </div>
       <div id="data-form-buttons">
-        <button onClick={handleSave} disabled={loading}>
-          {loading ? 'Saving...' : 'Save Data'}
+        <button id="save-data-button" onClick={handleSave} disabled={loading}>
+          {loading ? 'שומר...' : 'שמור נתונים'}
         </button>
-        <button onClick={onClose}>Close</button>
+        <button id="close-form-button" onClick={onClose}>סגור</button>
       </div>
     </div>
   );

@@ -62,17 +62,17 @@ function App() {
 
     if (activeShapePoints.length < 3) {
       console.error('❌ Not enough points for building creation');
-      alert('Please draw a valid building footprint first.');
+      alert('אנא צייר תחילה מתאר בניין תקין.');
       return;
     }
     
     if (!aiCommand.trim()) {
       console.error('❌ No AI command provided');
-      alert('Please enter a command for the AI.');
+      alert('אנא הכנס פקודה עבור הבינה המלאכותית.');
       return;
     }
 
-    setStatusMessage('AI is thinking...');
+    setStatusMessage('הבינה המלאכותית חושבת...');
 
     try {
       console.log('Calling AI with command:', aiCommand);
@@ -119,10 +119,10 @@ function App() {
         
         if (saveResult.success) {
           console.log('Building saved successfully');
-          setStatusMessage(`Building created and saved! Height: ${height}m, Floors: ${floors}`);
+          setStatusMessage(`בניין נוצר ונשמר! גובה: ${height}מ', קומות: ${floors}`);
         } else {
           console.error('Save failed:', saveResult.error);
-          setStatusMessage(`Building created but save failed: ${saveResult.error}`);
+          setStatusMessage(`בניין נוצר אך השמירה נכשלה: ${saveResult.error}`);
         }
         
         // Clear drawing state and show data form
@@ -133,11 +133,11 @@ function App() {
         
       } else {
         console.error('Failed to create building - no height or viewer');
-        setStatusMessage('AI could not determine building parameters or viewer not available.');
+        setStatusMessage('הבינה המלאכותית לא הצליחה לקבוע פרמטרי בניין או הצופה אינו זמין.');
       }
     } catch (error) {
       console.error('Error calling Gemini API:', error);
-      setStatusMessage('Error communicating with AI.');
+      setStatusMessage('שגיאה בתקשורת עם הבינה המלאכותית.');
     }
   };
 

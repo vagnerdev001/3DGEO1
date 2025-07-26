@@ -3,14 +3,14 @@ import './LayerSwitcher.css';
 
 const LayerSwitcher = ({ currentLayer, onLayerChange }) => {
   const layers = [
-    { id: 'osm', name: 'OpenStreetMap' },
-    { id: 'aerial', name: 'Aerial' },
-    { id: 'f4', name: 'F4 Map' }
+    { id: 'osm', name: 'מפת רחובות' },
+    { id: 'aerial', name: 'תצלום אווירי' },
+    { id: 'f4', name: 'מפת F4' }
   ];
 
   return (
     <div className="layer-switcher">
-      <h4>Map Layers</h4>
+      <h4>שכבות מפה</h4>
       {layers.map(layer => (
         <label key={layer.id} className="layer-option">
           <input
