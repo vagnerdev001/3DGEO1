@@ -5,6 +5,7 @@ import DataFormModal from './components/DataFormModal';
 import BuildingPopup from './components/BuildingPopup';
 import LayerSwitcher from './components/LayerSwitcher';
 import AdminPanel from './components/AdminPanel';
+import ObjectPlacer from './components/ObjectPlacer';
 import { buildingService } from './services/supabase';
 import './App.css';
 
