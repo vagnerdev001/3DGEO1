@@ -6,6 +6,7 @@ import BuildingPopup from './components/BuildingPopup';
 import LayerSwitcher from './components/LayerSwitcher';
 import AdminPanel from './components/AdminPanel';
 import ObjectPlacer from './components/ObjectPlacer';
+import { UrbanPlansDashboard } from './components/UrbanPlansDashboard';
 import { buildingService } from './services/supabase';
 import './App.css';
 
@@ -32,6 +33,10 @@ function App() {
   const [showObjectPlacer, setShowObjectPlacer] = useState(true);
   const [showLayerSwitcher, setShowLayerSwitcher] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(true);
+
+  // Plans Dashboard state
+  const [showPlansDashboard, setShowPlansDashboard] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState('default-project');
 
   // Load saved buildings when component mounts
   useEffect(() => {
@@ -951,6 +956,13 @@ function App() {
 
   return (
     <>
+      {showPlansDashboard && (
+        <UrbanPlansDashboard
+          projectId={currentProjectId}
+          onClose={() => setShowPlansDashboard(false)}
+        />
+      )}
+      
       <div className="app">
       <CesiumViewer
         ref={viewerRef}
@@ -1073,6 +1085,14 @@ function App() {
             onClick={() => setShowAdminPanel(true)}
           >
             🔧 ניהול מערכת
+          </button>
+        )}
+        {!showPlansDashboard && (
+          <button 
+            className="window-menu-btn plans-dashboard"
+            onClick={() => setShowPlansDashboard(true)}
+          >
+            🏗️ לוח תוכניות
           </button>
         )}
       </div>
