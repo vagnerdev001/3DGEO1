@@ -59,35 +59,6 @@ const BuildingPopup = ({ building, position, onEdit, onClose }) => {
       </div>
       
       <div className="popup-content">
-        <div className="plans-carousel">
-          <h5>📋 תוכניות בניין</h5>
-          <div className="plans-tabs">
-            {plans.map(plan => (
-              <button
-                key={plan.id}
-                className={`plan-tab ${activePlan === plan.id ? 'active' : ''}`}
-                onClick={() => setActivePlan(plan.id)}
-              >
-                {plan.name}
-              </button>
-            ))}
-          </div>
-          <div className="plan-content">
-            {renderPlanContent(activePlan)}
-          </div>
-        </div>
-        
-        {building.weblink && (
-          <div className="embed-section">
-            <button 
-              className="view-plans-btn"
-              onClick={() => setShowEmbed(true)}
-            >
-              📋 צפה בתוכניות בניין
-            </button>
-          </div>
-        )}
-        
         <div className="metadata-section">
           <h5>📊 פרטי בניין</h5>
           <div className="popup-row">
@@ -125,16 +96,14 @@ const BuildingPopup = ({ building, position, onEdit, onClose }) => {
       </div>
       
       <div className="popup-actions">
-        <div style={{display: 'flex', gap: '10px'}}>
-          <button className="edit-button" onClick={handleEdit}>
-            ✏️ ערוך בניין
+        <button className="edit-button" onClick={handleEdit}>
+          ✏️ ערוך בניין
+        </button>
+        {building.weblink && (
+          <button className="view-plans-btn" onClick={() => setShowEmbed(true)}>
+            📋 צפה בתוכנית
           </button>
-          {building.weblink && (
-            <button className="view-plans-btn" onClick={() => setShowEmbed(true)}>
-              📋 צפה בתוכנית
-            </button>
-          )}
-        </div>
+        )}
       </div>
       
       {/* Embed Viewer Modal */}
