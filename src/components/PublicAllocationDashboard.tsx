@@ -630,7 +630,7 @@ const PublicAllocationDashboard: React.FC = () => {
         </div>
       </div>
 
-      {selectedPlan && (
+      {selectedPlan ? (
         <>
           {/* Enhanced plan header */}
           <div style={{ 
@@ -822,7 +822,7 @@ const PublicAllocationDashboard: React.FC = () => {
             </div>
           </div>
         </>
-      )}
+      ) : null}
 
       {/* Debug Info */}
       <div style={{ 
