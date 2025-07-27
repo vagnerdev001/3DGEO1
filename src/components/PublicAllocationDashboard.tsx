@@ -768,6 +768,63 @@ const PublicAllocationDashboard: React.FC = () => {
                   }}>
                     {formatCurrency(totalRevenue - totalExpenses)}
                   </div>
+                  {selectedPlan.plan_type === 'proposed' && (
+                    <button
+                      onClick={() => {
+                        // Close the dashboard and return to map
+                        if (window.parent && window.parent !== window) {
+                          // If in iframe, communicate with parent
+                          window.parent.postMessage({ action: 'returnToMap', planArea: 'tel-aviv-center' }, '*');
+                        } else {
+                          // Direct navigation - close dashboard
+                          const closeButton = document.querySelector('.close-dashboard-btn') as HTMLButtonElement;
+                          if (closeButton) {
+                            closeButton.click();
+                          }
+                          // Focus on map area (Tel Aviv center coordinates)
+                          setTimeout(() => {
+                            const mapEvent = new CustomEvent('focusMapArea', {
+                              detail: {
+                                longitude: 34.7818,
+                                latitude: 32.0853,
+                                zoom: 16,
+                                planName: selectedPlan.plan_name
+                              }
+                            });
+                            window.dispatchEvent(mapEvent);
+                          }, 100);
+                        }
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 4px rgba(76, 175, 80, 0.2)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#45a049';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(76, 175, 80, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#4CAF50';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(76, 175, 80, 0.2)';
+                      }}
+                      title="חזור למפה באיזור התוכנית"
+                    >
+                      🗺️ חזור למפה
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
