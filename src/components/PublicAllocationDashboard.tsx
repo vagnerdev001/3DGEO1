@@ -259,7 +259,7 @@ const PublicAllocationDashboard: React.FC = () => {
   };
 
   const createSampleRevenues = async (planName: string, planType: string) => {
-    const revenueData = [];
+    const revenueData: RevenueProjection[] = [];
     
     // Different revenue sources based on plan type
     const revenueSources = {
