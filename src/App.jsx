@@ -31,10 +31,10 @@ function App() {
   const [selectedObjectPosition, setSelectedObjectPosition] = useState(null);
   const [placedObjects, setPlacedObjects] = useState([]);
 
-  const [showAIControls, setShowAIControls] = useState(true);
-  const [showObjectPlacer, setShowObjectPlacer] = useState(true);
-  const [showLayerSwitcher, setShowLayerSwitcher] = useState(true);
-  const [showAdminPanel, setShowAdminPanel] = useState(true);
+  const [showAIControls, setShowAIControls] = useState(false);
+  const [showObjectPlacer, setShowObjectPlacer] = useState(false);
+  const [showLayerSwitcher, setShowLayerSwitcher] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   // Widget visibility state controlled by admin panel
   const [widgetVisibility, setWidgetVisibility] = useState({
@@ -70,6 +70,9 @@ function App() {
       case 'publicAllocation':
         setShowPublicAllocation(isVisible);
         break;
+        case 'aiControls':
+          setShowAiControls(isVisible);
+          break;
     }
   };
 
@@ -1062,6 +1065,7 @@ function App() {
           onLayerChange={setCurrentLayer}
         />
       )}
+     
       {showObjectPlacer && (
         <ObjectPlacer
           show={showObjectPlacer}
@@ -1115,7 +1119,7 @@ function App() {
       </div>
       
       {/* Panel Toggle Menu */}
-      <div style={{
+      {/* <div style={{
         position: 'absolute',
         top: '50%',
         left: '10px',
@@ -1188,7 +1192,7 @@ function App() {
             🏛️ הקצאת ציבור
           </button>
         )}
-      </div>
+      </div> */}
       
       {/* Test Data Component */}
       {showTestData && (
