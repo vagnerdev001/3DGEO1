@@ -228,7 +228,7 @@ const CesiumViewer = forwardRef(({
         const osmBuildings = await window.Cesium.createOsmBuildingsAsync();
         if (!viewer || viewer.isDestroyed()) return;
         
-        viewer.scene.primitives.add(osmBuildings);
+        // viewer.scene.primitives.add(osmBuildings);
         osmBuildings.style = new window.Cesium.Cesium3DTileStyle({
           color: {
             conditions: [
@@ -236,7 +236,7 @@ const CesiumViewer = forwardRef(({
               ['Number(${height}) >= 50', 'color("#FF9800")'],
               ['Number(${height}) >= 25', 'color("#FF5722")'],
               ['Number(${height}) >= 10', 'color("#F44336")'],
-              ['true', 'color("#BDBDBD")']
+              // ['true', 'color("#BDBDBD")']
             ]
           }
         });
